@@ -1,0 +1,8 @@
+# Ignore everything
+**
+
+# Except .gitignore itself
+!.gitignore
+
+# And all .py files anywhere (even in subfolders)
+!**/*.py
