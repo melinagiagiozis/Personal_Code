@@ -6,3 +6,4 @@
 
 # And all .py files anywhere (even in subfolders)
 !**/*.py
+!.README.md
