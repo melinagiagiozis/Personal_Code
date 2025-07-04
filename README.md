@@ -6,9 +6,15 @@
 
 🔍 Authors: Melina Giagiozis, José Zariffa
 
-📝 Summary: Wearable cameras provide a means to assess hand function in individuals with spinal cord injury (SCI) beyond clinical settings. Previous studies have found that clinicians acknowledge the potential of egocentric video for monitoring and informing rehabilitation, however, the large volumes of video data poses a challenge for its efficient integration into clinical practice. To address this, we implemented and evaluated three video summarization algorithms.
+📝 Summary: Wearable cameras provide a means to assess hand function in individuals with spinal cord injury (SCI) beyond clinical settings. Previous studies have found that clinicians acknowledge the potential of egocentric video for monitoring and informing rehabilitation, however, the large volumes of video data poses a challenge for its efficient integration into clinical practice. To address this, we implemented and evaluated three video summarization algorithms. A dataset comprising 316 egocentric videos from 20 individuals with cervical SCI was used. Participants wore head-mounted cameras to record daily activities in their home environment. Three unsupervised video summarization algorithms were applied to the data (CTVSUM [1], CA-SUM [2], DR-DSN [3]). Using 5-fold cross-validation, the summaries were evaluated based on computational metrics. In addition, a human evaluation was conducted to determine whether the summaries adequately captured upper limb use in the home environment following SCI.
 
 🗝️ Keywords: egocentric video, home monitoring, video summarization, spinal cord injury, upper limb rehabilitation, wearable technology
+
+[1] Pang Z, Nakashima Y, Otani M, Nagahara H. Contrastive losses are natural criteria for unsupervised video summarization. 2023 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV). IEEE; 2023. doi:10.1109/wacv56688.2023.00205
+
+[2] Apostolidis E, Balaouras G, Mezaris V, Patras I. Summarizing videos using concentrated attention and considering the uniqueness and diversity of the video frames. Proceedings of the 2022 International Conference on Multimedia Retrieval. New York, NY, USA: ACM; 2022. doi:10.1145/3512527.3531404
+
+[3] Zhou K, Qiao Y, Xiang T. Deep reinforcement learning for unsupervised video summarization with diversity-representativeness reward. Proc Conf AAAI Artif Intell. 2018;32. doi:10.1609/aaai.v32i1.12255
 
 ## Getting Started
 
