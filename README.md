@@ -31,9 +31,9 @@ Path to this repo on the drive: 'NET/Wearable Hand Monitoring/Centralized_Datase
 
 The following folders contain scripts to generate summaries with each algorithm for all videos in the dataset. Furthermore, they contain extracted frame-level importance scores and other model-specific outputs, each summarization algorithm trained for 40 epochs on egocentric video data:
 
-- 01_pytorch-ctvsum_40epochs_egocentric: CTVSUM
-- 02_ca-sum_40epochs_egocentric: CA-SUM
-- 03_pytorch-vsumm-reinforce_40epochs_egocentric: DR-DSN
+- 01_pytorch-ctvsum_40epochs_egocentric: CTVSUM \[[1](#1)\]
+- 02_ca-sum_40epochs_egocentric: CA-SUM \[[2](#2)\]
+- 03_pytorch-vsumm-reinforce_40epochs_egocentric: DR-DSN \[[3](#3)\]
 
 
 ## Contact 
