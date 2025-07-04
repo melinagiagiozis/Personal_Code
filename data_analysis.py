@@ -3,7 +3,7 @@ Script: data_analysis.py
 
 Description:
     This script performs quantitative evaluation and statistical comparison 
-    of video summarization algorithms across 5 cross-validation splits
+    of video summarization algorithms across 5 cross-validation splits.
 
 """
 
