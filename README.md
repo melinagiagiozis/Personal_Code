@@ -12,9 +12,14 @@
 
 References:
 
-<a id="1">[1]</a> Pang Z, Nakashima Y, Otani M, Nagahara H. *Contrastive losses are natural criteria for unsupervised video summarization*. WACV 2023. https://doi.org/10.1109/wacv56688.2023.00205  
-<a id="2">[2]</a> Apostolidis E, Balaouras G, Mezaris V, Patras I. *Summarizing videos using concentrated attention...*. ICMR 2022. https://doi.org/10.1145/3512527.3531404  
-<a id="3">[3]</a> Zhou K, Qiao Y, Xiang T. *Deep reinforcement learning for unsupervised video summarization...*. AAAI 2018. https://doi.org/10.1609/aaai.v32i1.12255
+<a id="1">[1]</a> Pang, Z., Nakashima, Y., Otani, M., & Nagahara, H. (2023). Contrastive losses are natural criteria for unsupervised video summarization. 2023 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV). https://doi.org/10.1109/wacv56688.2023.00205
+<br>
+
+<a id="2">[2]</a> Apostolidis, E., Balaouras, G., Mezaris, V., & Patras, I. (2022). Summarizing videos using concentrated attention and considering the uniqueness and diversity of the video frames. Proceedings of the 2022 International Conference on Multimedia Retrieval (ICMR). https://doi.org/10.1145/3512527.3531404
+<br>
+
+<a id="3">[3]</a> Zhou, K., Qiao, Y., & Xiang, T. (2018). Deep reinforcement learning for unsupervised video summarization with diversity-representativeness reward. Proceedings of the AAAI Conference on Artificial Intelligence, 32(1). https://doi.org/10.1609/aaai.v32i1.12255
+
 
 ## Getting Started
 
