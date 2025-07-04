@@ -13,7 +13,7 @@ Description:
     - Assembly of training/testing datasets per split
 
 Note: High-level visual features are computed using the GoogleNet model 
-pre-trained on the ImageNet dataset [29], which is a a common approach 
+pre-trained on the ImageNet dataset, which is a a common approach 
 in video summarization tasks.
 
 CA-SUM and CTVSUM require HDF5 format, while DR-DSN uses both HDF5 
