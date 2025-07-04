@@ -16,6 +16,7 @@ All code in this repository is written in Python 3.8.20 and the dependencies lis
 
 Path to this repo on the drive: 'NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/02_Code/Personal_Code'.
 
+
 📁 Script Overview
 - config.py: Defines paths to video data, extracted frames, features, and summaries.
 - functions.py: Contains preprocessing utilities for frame extraction and GoogLeNet-based feature computation.
@@ -24,6 +25,14 @@ Path to this repo on the drive: 'NET/Wearable Hand Monitoring/Centralized_Datase
 - evaluation.py: Evaluates summary quality using coverage, temporal distribution, diversity, representativeness, and information loss.
 - data_analysis.py: Performs statistical comparisons of summarization algorithms across cross-validation splits.
 - create_figure.py: Generates visualizations of video summaries for use in reports or publications.
+
+📂 Summarization Algorithm Outputs
+The following folders contain the extracted frame-level importance scores and other model-specific outputs from three video summarization algorithms, each trained for 40 epochs on egocentric video data:
+
+01_pytorch-ctvsum_40epochs_egocentric: CTVSUM
+02_ca-sum_40epochs_egocentric: CA-SUM
+03_pytorch-vsumm-reinforce_40epochs_egocentric: DR-DSN
+
 
 ## Contact 
 
