@@ -23,7 +23,8 @@ Path to this repo on the drive: 'NET/Wearable Hand Monitoring/Centralized_Datase
 - functions.py: Contains preprocessing utilities for frame extraction and GoogLeNet-based feature computation.
 - adjust_video_speed.py: Creates sped-up full-length videos from extracted frames for human evaluation.
 - frames_to_video.py: Converts frame sequences into .mp4 video summaries produced by different summarization algorithms.
-- evaluation.py: Evaluates summary quality using coverage, temporal distribution, diversity, representativeness, and information loss.
+- computational_evaluation.py: Evaluates summary quality using coverage, temporal distribution, diversity, representativeness, and information loss.
+- human_evaluation.py: Evaluates summary quality based on human assessment using a Likert scale.
 - data_analysis.py: Performs statistical comparisons of summarization algorithms across cross-validation splits.
 - create_figure.py: Generates visualizations of video summaries for use in reports or publications.
 

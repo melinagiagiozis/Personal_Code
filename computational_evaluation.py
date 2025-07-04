@@ -1,5 +1,5 @@
 """
-Script: evaluation.py
+Script: computational_evaluation.py
 
 Description:
     This script evaluates the quality of video summaries generated 
