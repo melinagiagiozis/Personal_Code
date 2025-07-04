@@ -17,8 +17,7 @@ All code in this repository is written in Python 3.8.20 and the dependencies lis
 Path to this repo on the drive: 'NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/02_Code/Personal_Code'.
 
 📁 Script Overview
-
-- config.py: Defines absolute paths to video data, extracted frames, features, and summaries.
+- config.py: Defines paths to video data, extracted frames, features, and summaries.
 - functions.py: Contains preprocessing utilities for frame extraction and GoogLeNet-based feature computation.
 - adjust_video_speed.py: Creates sped-up full-length videos from extracted frames for human evaluation.
 - frames_to_video.py: Converts frame sequences into .mp4 video summaries produced by different summarization algorithms.
