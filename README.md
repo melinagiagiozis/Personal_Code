@@ -12,7 +12,9 @@
 
 ## Getting Started
 
-All code in this repository is written in Python 3.8.20 and the dependencies listed in `requirements.txt`. The file paths in this repository use absolute paths to the M: drive ('NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/02_Code/Personal_Code').
+All code in this repository is written in Python 3.8.20 and the dependencies listed in `requirements.txt`. The file paths in this repository use absolute paths to the UHN M: drive.
+
+Path to this repo on the drive: 'NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/02_Code/Personal_Code'.
 
 
 ## Contact 
