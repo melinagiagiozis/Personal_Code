@@ -1,3 +1,19 @@
+"""
+Script: evaluation.py
+
+Description:
+    This script evaluates the quality of video summaries generated 
+    by different algorithms using five quantitative metrics:
+
+Definitions:
+Coverage: Proportion of original frames included in the summary.
+Temporal Distribution: How uniformly summary frames are distributed over time.
+Diversity: Visual dissimilarity between summary frames.
+Representativeness: How well the summary reflects the full video’s content.
+Information Loss: Entropy-based measure of visual information retained.
+
+"""
+
 import os
 import time
 import numpy as np

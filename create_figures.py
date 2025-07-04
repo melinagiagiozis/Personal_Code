@@ -1,3 +1,12 @@
+"""
+Script: create_figure.py
+
+Description:
+    This script creates figures to visualize the video summaries and
+    saves then in Personal_Code/Figures.
+
+"""
+
 import os
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg

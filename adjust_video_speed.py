@@ -1,6 +1,16 @@
+"""
+Script: adjust_video_speed.py
+
+Description:
+    This script creates sped-up full-length videos from frame sequences 
+    of selected egocentric videos for human evaluation.
+
+"""
+    
 import cv2
 import os
 from glob import glob
+from moviepy.editor import VideoFileClip, vfx
 
 # Mapping of video sources to destination folders
 video_map = {
@@ -12,8 +22,37 @@ video_map = {
 }
 
 # Base directory for frames
-base_path = "/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Frames"
+frames_path = "/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Frames"
+full_video_path = '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/05_HumanEvaluation/00_Admin/Full Videos'
 evaluation_path = "/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/05_HumanEvaluation"
+
+
+# ------------ Speed up original video ------------
+
+
+# Speed factor
+speed_factor = 2.0
+
+# Process each video in the folder
+for filename in os.listdir(full_video_path):
+    if filename.endswith('.MP4') and not filename.endswith('_fast.mp4'):
+        file_path = os.path.join(full_video_path, filename)
+        output_path = os.path.join(full_video_path, filename.replace('.MP4', '_fast.mp4'))
+
+        # Load and speed up video (without audio)
+        clip = VideoFileClip(file_path).without_audio()
+        fast_clip = clip.fx(vfx.speedx, factor=speed_factor)
+
+        # Write sped-up video (no audio)
+        fast_clip.write_videofile(output_path, codec='libx264', audio=False)
+
+        # Free resources
+        clip.close()
+        fast_clip.close()
+
+
+# ------------ Speed up frames ------------
+
 
 # Settings
 frame_rate = 1       # 1 FPS input
@@ -21,7 +60,7 @@ speed_factor = 3     # speed-up
 output_fps = frame_rate * speed_factor
 
 for sub_path, video_folder in video_map.items():
-    frame_dir = os.path.join(base_path, sub_path)
+    frame_dir = os.path.join(frames_path, sub_path)
     output_dir = os.path.join(evaluation_path, video_folder)
     os.makedirs(output_dir, exist_ok=True)
 
@@ -47,6 +86,10 @@ for sub_path, video_folder in video_map.items():
 
     out.release()
     print(f"Saved: {output_path}")
+
+
+# ------------ Rotate videos by 180 ------------
+
 
 # # Input and output paths
 # input_path = "/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/05_HumanEvaluation/Video_02/Video_02_Full.mp4"
@@ -79,30 +122,4 @@ for sub_path, video_folder in video_map.items():
 # out.release()
 # print(f"Saved rotated video to: {output_path}")
 
-
-# import os
-# from moviepy.editor import VideoFileClip, vfx
-
-# # Path to the folder containing the videos
-# folder_path = '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/05_HumanEvaluation/00_Admin/Full Videos'
-
-# # Speed factor
-# speed_factor = 2.0
-
-# # Process each video in the folder
-# for filename in os.listdir(folder_path):
-#     if filename.endswith('.MP4') and not filename.endswith('_fast.mp4'):
-#         file_path = os.path.join(folder_path, filename)
-#         output_path = os.path.join(folder_path, filename.replace('.MP4', '_fast.mp4'))
-
-#         # Load and speed up video (without audio)
-#         clip = VideoFileClip(file_path).without_audio()
-#         fast_clip = clip.fx(vfx.speedx, factor=speed_factor)
-
-#         # Write sped-up video (no audio)
-#         fast_clip.write_videofile(output_path, codec='libx264', audio=False)
-
-#         # Free resources
-#         clip.close()
-#         fast_clip.close()
 

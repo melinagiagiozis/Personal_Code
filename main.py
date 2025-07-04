@@ -1,3 +1,27 @@
+"""
+Script: main.py
+
+Description:
+    This script provides a complete pipeline for preprocessing 
+    egocentric video data for summarization tasks. It supports 
+    multiple steps, including:
+
+    - Frame extraction from videos (1 FPS)
+    - Feature extraction using GoogLeNet (Pool5 layer)
+    - Aggregation of features into HDF5 or NumPy format
+    - Creation of training/test splits
+    - Assembly of training/testing datasets per split
+
+Note: High-level visual features are computed using the GoogleNet model 
+pre-trained on the ImageNet dataset [29], which is a a common approach 
+in video summarization tasks.
+
+CA-SUM and CTVSUM require HDF5 format, while DR-DSN uses both HDF5 
+and NumPy formats.
+
+"""
+
+
 import os
 import time
 import h5py
@@ -8,26 +32,14 @@ import shutil
 import json
 import random
 
-# Do you want to extract frames?
-extract_frames_boolian = False
-
-# Do you want to extract features?
-extract_features_boolian = False
-
-# Do you want to combine features?
-combine_features_boolian = False
-
-# Do you want to assemble features (for training)?
-assemble_selected_features = False
-
-# Do you want to create test/train splits?
-create_splits = False
-
-# Do you want to combine features for test split?
-set_up_test_features_boolian = False
-
-# Do you want to combine features for train split?
-set_up_train_features_boolian = False
+# Boolean flags to control which steps to run.
+run_extract_frames = False
+run_extract_features = False
+run_combine_features = False
+assemble_selected_features = False  # for training
+create_splits = False  # test/train splits
+set_up_test_features = False  # combine features for test split
+set_up_train_features = False  # combine features for train split
 
 
 # Loop through each patient folder
@@ -61,7 +73,7 @@ for patient in sorted(os.listdir(data_path)):
                 os.makedirs(video_features_path, exist_ok=True)
 
                 # Extract frames
-                if extract_frames_boolian:
+                if run_extract_frames:
                     if not os.listdir(video_frames_path):
                         start_time = time.time()
                         extract_frames(video_path, video_frames_path, frame_rate=1)
@@ -72,7 +84,7 @@ for patient in sorted(os.listdir(data_path)):
                         print(f"Frames already extracted from {video}.")
 
                 # Extract GoogleNet features
-                if extract_features_boolian:
+                if run_extract_features:
 
                     video_name = os.path.splitext(video)[0]  # Remove file extension
                     feature_h5_file = os.path.join(video_features_path, f"{video_name}.h5")
@@ -91,18 +103,18 @@ for patient in sorted(os.listdir(data_path)):
                     else:
                         print(f"Features already extracted from {video}.")
 
-                if extract_features_boolian or extract_frames_boolian:
+                if run_extract_features or run_extract_frames:
                     print(f"Extracted frames and features from {video}.")
 
                     print('------------------------------------------------')
 
-if extract_features_boolian or extract_frames_boolian:
+if run_extract_features or run_extract_frames:
     print("Frame and feature extraction completed.")
 
 
 
 ### === Combine All Features into a Single HDF5 File === ###
-if combine_features_boolian:
+if run_combine_features:
     output = '../../01_Data/egocentric_googlenet_all.h5'
 
     # Collect all feature files across patient folders
@@ -237,7 +249,7 @@ if create_splits:
     print(f"Saved splits to {output_path}")
 
 for split in [0, 1, 2, 3, 4]:
-    if set_up_test_features_boolian:
+    if set_up_test_features:
         print('------ Split ', str(split), ' ------')
         ### === Combine test features into a single HDF5 File === ###
 
@@ -303,7 +315,7 @@ for split in [0, 1, 2, 3, 4]:
         print(f"Merged Pool5 HDF5 saved: {output}")
 
 
-    if set_up_train_features_boolian:
+    if set_up_train_features:
         print('------ Split ', str(split), ' ------')
         # Destination folder for all .npy files
         destination_folder = os.path.join(features_path, "selected_features_train_" + str(split))

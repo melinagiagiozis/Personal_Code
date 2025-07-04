@@ -1,3 +1,15 @@
+"""
+Script: functions.py
+
+Description:
+    This script contains utility functions for preprocessing videos 
+    and extracting frame-level features.
+    - Extract frames from videos at a specified frame rate.
+    - Extract deep features from frames using the GoogLeNet model (Pool5 layer).
+    - Save extracted features in HDF5 or in NumPy format (depending on the algorithm used).
+
+"""
+
 import torch
 import torchvision.transforms as transforms
 from torchvision import models

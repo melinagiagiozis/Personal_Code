@@ -1,6 +1,16 @@
 """
-14.03.2025, Melina Giagiozis
+Script: config.py
+
+Description:
+    This script defines the absolute paths for data storage.
+    
+    - data_path: full videos
+    - frames_path: extracted frames for each video (1 FPS)
+    - features_path: extracted features for each video
+    - summaries_path: generated summaries for each video
+
 """
+
 
 import os
 import numpy as np
