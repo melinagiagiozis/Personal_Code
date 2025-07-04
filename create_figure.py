@@ -62,9 +62,9 @@ for video_id in ['SCI02_01']:
         ax.set_ylabel(y_label, size=9)
         ax.grid(True)
 
-    plot_colored_scatter(axs[0], ca_sum_scores, 'CA-SUM', r'$\mathrm{Importance\ Score}_{CA-SUM}$')
     plot_colored_scatter(axs[1], rl_sum_scores, 'DR-DSN', r'$\mathrm{Importance\ Score}_{DR-DSN}$')
     plot_colored_scatter(axs[2], cl_sum_scores, 'CTVSUM', r'$\mathrm{Importance\ Score}_{CTVSUM}$')
+    plot_colored_scatter(axs[0], ca_sum_scores, 'CA-SUM', r'$\mathrm{Importance\ Score}_{CA-SUM}$')
     axs[2].set_xlabel("Video frame")
 
     plt.tight_layout()
@@ -82,9 +82,9 @@ for video_id in ['SCI02_01']:
 
     # ---------- Define paths to summary folders ----------
     summary_dirs = {
-        'CTVSUM': f'/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/pytorch-CTVSUM/split_0/{video_id.split("_")[0]}/{video_id}',
+        'DR-DSN': f'/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/pytorch-vsumm-reinforce/split_0/{video_id.split("_")[0]}/{video_id}',
         'CA-SUM': f'/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/CA-SUM/split_0/{video_id.split("_")[0]}/{video_id}',
-        'DR-DSN': f'/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/pytorch-vsumm-reinforce/split_0/{video_id.split("_")[0]}/{video_id}'
+        'CTVSUM': f'/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/pytorch-CTVSUM/split_0/{video_id.split("_")[0]}/{video_id}'
     }
 
     # ---------- Load importance scores ----------
@@ -99,9 +99,9 @@ for video_id in ['SCI02_01']:
 
     # ---------- Prepare summary indices ----------
     summary_positions = {
-        'CA-SUM': set(load_summary_frame_indices(summary_dirs['CA-SUM'])),
+        'DR-DSN': set(load_summary_frame_indices(summary_dirs['DR-DSN'])),
         'CTVSUM': set(load_summary_frame_indices(summary_dirs['CTVSUM'])),
-        'DR-DSN': set(load_summary_frame_indices(summary_dirs['DR-DSN']))
+        'CA-SUM': set(load_summary_frame_indices(summary_dirs['CA-SUM']))
     }
 
     # ---------- Plotting ----------
@@ -135,12 +135,12 @@ for video_id in ['SCI02_01']:
 
     fig, axs = plt.subplots(3, 1, figsize=(16, 10), sharex=True)
 
-    plot_highlighted(axs[0], ca_sum_scores, summary_positions['CA-SUM'], 
-                     '(A) CA-SUM', r'$\mathrm{Importance\ Score}_{CA-SUM}$')
+    plot_highlighted(axs[0], rl_sum_scores, summary_positions['DR-DSN'], 
+                     '(A) DR-DSN', r'$\mathrm{Importance\ Score}_{DR-DSN}$')
     plot_highlighted(axs[1], cl_sum_scores, summary_positions['CTVSUM'], 
-                     '(B) CTVSUM', r'$\mathrm{Importance\ Score}_{DR-DSN}$')
-    plot_highlighted(axs[2], rl_sum_scores, summary_positions['DR-DSN'], 
-                     '(C) DR-DSN', r'$\mathrm{Importance\ Score}_{CTVSUM}$')
+                     '(B) CTVSUM', r'$\mathrm{Importance\ Score}_{CTVSUM}$')
+    plot_highlighted(axs[2], ca_sum_scores, summary_positions['CA-SUM'], 
+                     '(C) CA-SUM', r'$\mathrm{Importance\ Score}_{CA-SUM}$')
     # axs[2].set_xlabel('Frames', size=13)
 
     # fig.align_ylabels(axs)
@@ -174,9 +174,9 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
     # Paths
     full_video_dir = '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Frames/' + subject_id + '/' + video
     summary_dirs = {
-        'CA-SUM': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/CA-SUM/split_0/' + subject_id + '/' + video,
-        'CTVSUM': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/pytorch-CTVSUM/split_0/' + subject_id + '/' + video,
         'DR-DSN': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/pytorch-vsumm-reinforce/split_0/' + subject_id + '/' + video,
+        'CTVSUM': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/pytorch-CTVSUM/split_0/' + subject_id + '/' + video,
+        'CA-SUM': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/CA-SUM/split_0/' + subject_id + '/' + video
     }
 
     # Helper to load frame indices
@@ -243,9 +243,9 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
     # Paths
     full_video_dir = '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Frames/' + subject_id + '/' + video
     summary_dirs = {
-        'CA-SUM': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/CA-SUM/split_0/' + subject_id + '/' + video,
-        'CTVSUM': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/pytorch-CTVSUM/split_0/' + subject_id + '/' + video,
         'DR-DSN': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/pytorch-vsumm-reinforce/split_0/' + subject_id + '/' + video,
+        'CTVSUM': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/pytorch-CTVSUM/split_0/' + subject_id + '/' + video,
+        'CA-SUM': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/CA-SUM/split_0/' + subject_id + '/' + video
     }
 
 
@@ -287,7 +287,7 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
     row_configs.append(("thumb", 'Full Video', None))  # just thumbnails
     row_configs.append(("title", 'Full Video', '(A) Example frames from an egocentric video'))  # title below
 
-    method_titles = ['(B) CA-SUM', '(C) CTVSUM', '(D) DR-DSN']
+    method_titles = ['(B) DR-DSN', '(C) CTVSUM', '(D) CA-SUM']
     for i, key in enumerate(summary_dirs.keys()):
         row_configs.append(("hist", key, None))
         row_configs.append(("thumb", key, None))

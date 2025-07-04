@@ -16,6 +16,9 @@ metrics = ["Coverage", "TemporalDistribution",
            "Diversity", "Representativeness"]
 df[metrics] = df[metrics].apply(pd.to_numeric, errors="coerce")
 
+# Invert TemporalDistribution if needed so higher = better
+df["TemporalDistribution"] = 1 - df["TemporalDistribution"]
+
 # Ensure 'Split' is treated as categorical or integer-like
 df["Split"] = pd.to_numeric(df["Split"], errors="coerce").astype("Int64")
 
