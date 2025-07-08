@@ -386,5 +386,5 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
             ax.text(0.5, 0.5, title, fontsize=26, ha='center', va='center', transform=ax.transAxes)
 
     # Save the figure
-    plt.savefig('Figures/' + video + '_summary_comparison_v4.png', dpi=300, bbox_inches='tight')
+    plt.savefig('Figures/' + video + '_summary_comparison_v4.pdf', dpi=300, bbox_inches='tight')
     plt.close()
