@@ -77,7 +77,7 @@ for video_id in ['SCI02_01']:
     axs[2].set_xlabel("Video frame")
 
     plt.tight_layout()
-    plt.savefig('Figures/' + video_id + '_summary_comparison_v1.png', dpi=300, bbox_inches='tight')
+    plt.savefig('Figures/SummaryVisualizations/' + video_id + '_summary_comparison_v1.png', dpi=300, bbox_inches='tight')
     plt.close()
 
 
@@ -114,13 +114,13 @@ for video_id in ['SCI02_01']:
     }
 
     # ---------- Plotting ----------
-    def plot_highlighted(ax, scores, selected_ids, title, y_label):
+    def plot_highlighted(ax, scores, selected_ids, title, ylabel, color_per_alg):
         x = np.arange(len(scores))
         selected = np.array([i in selected_ids for i in x])
         
         # Plot data
         ax.scatter(x[~selected], scores[~selected], color='lightgrey', s=20, label='Full video frames')
-        ax.scatter(x[selected], scores[selected], color='crimson', s=20, label='Summary frames')
+        ax.scatter(x[selected], scores[selected], color=color_per_alg, s=20, label='Summary frames')
         
         # Title below plot
         ax.text(0.5, -0.05, title, transform=ax.transAxes, ha='center', va='top', fontsize=28)
@@ -145,11 +145,11 @@ for video_id in ['SCI02_01']:
     fig, axs = plt.subplots(3, 1, figsize=(16, 10), sharex=True)
 
     plot_highlighted(axs[0], rl_sum_scores, summary_positions['DR-DSN'], 
-                     '(A) DR-DSN', r'$\mathrm{Importance\ Score}_{DR-DSN}$')
+                     '(A) DR-DSN', r'$\mathrm{Importance\ Score}_{DR-DSN}$', 'k')
     plot_highlighted(axs[1], cl_sum_scores, summary_positions['CTVSUM'], 
-                     '(B) CTVSUM', r'$\mathrm{Importance\ Score}_{CTVSUM}$')
+                     '(B) CTVSUM', r'$\mathrm{Importance\ Score}_{CTVSUM}$', 'cornflowerblue')
     plot_highlighted(axs[2], ca_sum_scores, summary_positions['CA-SUM'], 
-                     '(C) CA-SUM', r'$\mathrm{Importance\ Score}_{CA-SUM}$')
+                     '(C) CA-SUM', r'$\mathrm{Importance\ Score}_{CA-SUM}$', 'crimson')
     # axs[2].set_xlabel('Frames', size=13)
 
     # fig.align_ylabels(axs)
@@ -166,7 +166,7 @@ for video_id in ['SCI02_01']:
 
     plt.tight_layout()
     plt.subplots_adjust(hspace=0.6, bottom=0.15)
-    plt.savefig(f'Figures/{video_id}_summary_comparison_v2.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'Figures/SummaryVisualizations/{video_id}_summary_comparison_v2.png', dpi=300, bbox_inches='tight')
     plt.close()
 
 
@@ -216,7 +216,8 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
 
     # Summary rows
     numerate = ['(B)', '(C)', '(D)']
-    colors = ['green', 'blue', 'purple']
+    # colors = ['green', 'blue', 'purple']
+    colors = ['k', 'cornflowerblue', 'crimson']
     for i, (key, indices) in enumerate(summary_indices.items(), start=1):
         bars = np.zeros(n_total)
         bars[indices] = 1
@@ -235,7 +236,7 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
         ax.set_xticks([])
 
     plt.tight_layout()
-    plt.savefig('Figures/' + video + '_summary_comparison_v3.png', dpi=300, bbox_inches='tight')
+    plt.savefig('Figures/SummaryVisualizations/' + video + '_summary_comparison_v3.png', dpi=300, bbox_inches='tight')
     plt.close()
 
 
@@ -256,6 +257,16 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
         'CTVSUM': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/pytorch-CTVSUM/split_0/' + subject_id + '/' + video,
         'CA-SUM': '/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/01_Data/SCI_HOME_Summaries/CA-SUM/split_0/' + subject_id + '/' + video
     }
+
+    # Load importance scores for the current video
+    with open("/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/02_Code/Personal_Code/01_pytorch-ctvsum_40epochs_egocentric/importance_scores_split_0.json", "r") as f:
+        cl_sum_scores = np.array(json.load(f).get(video, []))
+
+    with open("/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/02_Code/Personal_Code/02_ca-sum_40epochs_egocentric/importance_scores_split_0.json", "r") as f:
+        ca_sum_scores = np.array(json.load(f).get(video, []))
+
+    with open("/Volumes/NET/Wearable Hand Monitoring/Centralized_Datasets/SUMMARIZATION/02_Code/Personal_Code/03_pytorch-vsumm-reinforce_40epochs_egocentric/importance_scores_split_0.json", "r") as f:
+        rl_sum_scores = np.array(json.load(f).get(video, []))
 
 
     # Helper to get evenly spaced indices
@@ -284,11 +295,18 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
 
     # Plotting setup
     n_thumbs = 5
+    # colors = {
+    #     'Full Video': 'lightgray',
+    #     'CA-SUM': 'green',
+    #     'CTVSUM': 'blue',
+    #     'DR-DSN': 'm'
+    # }
+
     colors = {
         'Full Video': 'lightgray',
-        'CA-SUM': 'green',
-        'CTVSUM': 'blue',
-        'DR-DSN': 'm'
+        'CA-SUM': 'crimson',
+        'CTVSUM': 'cornflowerblue',
+        'DR-DSN': 'k'
     }
 
     # Step 1: Create list of rows to plot (hist or thumb)
@@ -386,5 +404,5 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
             ax.text(0.5, 0.5, title, fontsize=26, ha='center', va='center', transform=ax.transAxes)
 
     # Save the figure
-    plt.savefig('Figures/' + video + '_summary_comparison_v4.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig('Figures/SummaryVisualizations/' + video + '_summary_comparison_v4.png', dpi=300, bbox_inches='tight')
     plt.close()
