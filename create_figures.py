@@ -140,6 +140,17 @@ for video_id in ['SCI02_01']:
         ax.set_yticks(yticks)
         ax.set_yticklabels([])
 
+        ax.tick_params(
+            axis='both',
+            which='both',
+            bottom=True,
+            left=True,
+            labelbottom=False,
+            labelleft=False,
+            length=0  # Optional: hides the tick marks themselves
+        )
+
+
         ax.grid(True)
 
     fig, axs = plt.subplots(3, 1, figsize=(16, 10), sharex=True)
@@ -167,6 +178,8 @@ for video_id in ['SCI02_01']:
     plt.tight_layout()
     plt.subplots_adjust(hspace=0.6, bottom=0.15)
     plt.savefig(f'Figures/SummaryVisualizations/{video_id}_summary_comparison_v2.png', dpi=300, bbox_inches='tight')
+    if video_id == 'SCI02_01':
+        plt.savefig('Figures/FigureA1.png', dpi=600, bbox_inches='tight')
     plt.close()
 
 
@@ -405,4 +418,6 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
 
     # Save the figure
     plt.savefig('Figures/SummaryVisualizations/' + video + '_summary_comparison_v4.png', dpi=300, bbox_inches='tight')
+    if video == 'SCI02_01':
+        plt.savefig('Figures/Figure1.png', dpi=600, bbox_inches='tight')
     plt.close()

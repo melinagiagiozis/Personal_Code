@@ -9,11 +9,14 @@ Description:
 
 import pandas as pd
 import pingouin as pg
+import krippendorff
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from matplotlib.lines import Line2D
 from scipy.stats import friedmanchisquare
+import statsmodels.api as sm
+from PIL import Image
 
 
 # Load data
@@ -25,25 +28,35 @@ df["MeanScore"] = df[["Q1", "Q2", "Q3", "Q4", "Q5"]].mean(axis=1)
 
 # ---------------- Consistency between raters ----------------
 
-#  Compute ICC across all videos (i.e., consistency across participants)
-icc = pg.intraclass_corr(data=df, targets='Video', raters='Participant ID', ratings='MeanScore')
-icc_result = icc[icc["Type"] == "ICC2"]
+# #  Compute ICC across all videos (i.e., consistency across participants)
+# icc = pg.intraclass_corr(data=df, targets='Video', raters='Participant ID', ratings='MeanScore')
+# icc_result = icc[icc["Type"] == "ICC2"]
 
-print("Overall ICC (participant agreement across videos):")
-print(icc_result)
+# print("Overall ICC (participant agreement across videos):")
+# print(icc_result)
 
-questions = ["Q1", "Q2", "Q3", "Q4", "Q5"]
+data = df.pivot_table(index='Video', columns='Participant ID', values='MeanScore', aggfunc='mean')
+alpha = krippendorff.alpha(reliability_data=data.values, level_of_measurement='ordinal')
+print(f"Krippendorff's alpha: {alpha:.3f}")
+
+# questions = ["Q1", "Q2", "Q3", "Q4", "Q5"]
 
 # for q in questions:
+#     print(f"\n=== {q} ===")
 #     # Create a DataFrame for this question with required columns
 #     df_q = df[["Video", "Participant ID", q]].rename(columns={q: "Score"})
     
-#     # Compute ICC
-#     icc_q = pg.intraclass_corr(data=df_q, targets='Video', raters='Participant ID', ratings='Score')
-#     icc2_q = icc_q[icc_q["Type"] == "ICC2"]
+#     # # Compute ICC
+#     # icc_q = pg.intraclass_corr(data=df_q, targets='Video', raters='Participant ID', ratings='Score')
+#     # icc2_q = icc_q[icc_q["Type"] == "ICC2"]
     
-#     print(f"\nICC for {q}:")
-#     print(icc2_q[["Type", "ICC", "CI95%", "F", "pval"]])
+#     # print(f"\nICC for {q}:")
+#     # print(icc2_q[["Type", "ICC", "CI95%", "F", "pval"]])
+#     # Prepare Data for Krippendorff's alpha
+    
+#     df_pivot = df_q.pivot_table(index='Video', columns='Participant ID', values='Score', aggfunc='mean')
+#     alpha = krippendorff.alpha(reliability_data=df_pivot.values, level_of_measurement='ordinal')
+#     print(f"Krippendorff's alpha: {alpha:.3f}")
 
 # ---------------- Averages per algorithm ----------------
 
@@ -528,15 +541,22 @@ for i, algo in enumerate(ordered_algorithms):
         
         # Apply vertical jitter: offset each algorithm slightly on the y-axis
         jitter = (i - len(ordered_algorithms) / 2) * 0.1  # Adjust 0.1 for spacing
-        y_positions = np.arange(len(questions)) + jitter
+        y_positions = np.arange(len(questions)) - jitter
         
         ax.errorbar(means, y_positions, xerr=stds, label=algo, marker='o',
                     linestyle='-', color=colors[i], capsize=4)
 
 # Custom legend: only markers
+algo_colors = {
+    'DR-DSN': 'k',
+    'CTVSUM': 'cornflowerblue',
+    'CA–SUM': 'crimson'
+}
+
 legend_elements = [
-    Line2D([0], [0], marker='o', color='w', label=algo, markerfacecolor=colors[i], markersize=8)
-    for i, algo in enumerate(ordered_algorithms)
+    Line2D([0], [0], marker='o', color='w', label=algo,
+           markerfacecolor=algo_colors[algo], markersize=8)
+    for algo in ordered_algorithms
 ]
 ax.legend(handles=legend_elements, title="Algorithm", fontsize=12, title_fontsize=12)
 
@@ -552,99 +572,209 @@ ax.set_yticklabels([
 # Axis formatting
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
-ax.set_xlabel("Participant Rating", fontsize=14)
+ax.set_xlabel("Participant rating", fontsize=14)
 ax.set_xlim(0.5, 5.5)
 ax.set_ylim(-0.5, 4.5)
 ax.tick_params(axis='x', labelsize=14)
 ax.tick_params(axis='y', labelsize=14)
+ax.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, alpha=0.8)
 
 plt.tight_layout()
 plt.savefig("Figures/HumanEvaluation/Average_Question.png", dpi=600)
+plt.savefig("Figures/Figure2.png", dpi=600)
 plt.close()
 
 
-# ---------------- Average over everything to show results per Q with individual ratings ----------------
+# ---------------- Plot per video ----------------
+
+# Get unique video names
+videos = plot_data['Video'].unique()
+
+for vid in videos:
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    vid_data = plot_data[plot_data['Video'] == vid]
+
+    for i, algo in enumerate(ordered_algorithms):
+        algo_data = vid_data[vid_data['Algorithm'] == algo].set_index('Question').reindex(questions)
+        means = algo_data['mean'].values
+        stds = algo_data['std'].fillna(0).values
+
+        jitter = (i - len(ordered_algorithms) / 2) * 0.1  # vertical offset
+        y_positions = np.arange(len(questions)) - jitter
+
+        ax.errorbar(means, y_positions, xerr=stds, label=algo, marker='o',
+                    linestyle='-', color=colors[i], capsize=4)
+
+    # Set y-axis
+    ax.set_yticks(np.arange(len(questions)))
+    ax.set_yticklabels(['C5', 'C4', 'C3', 'C2', 'C1'])
+
+    # Axis formatting
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.set_xlabel("Participant rating", fontsize=14)
+    ax.set_xlim(0.5, 5.5)
+    ax.set_ylim(-0.5, 4.5)
+    ax.tick_params(axis='x', labelsize=14)
+    ax.tick_params(axis='y', labelsize=14)
+    ax.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, alpha=0.8)
+
+    plt.tight_layout()
+    plt.savefig(f"Figures/HumanEvaluation/Average_Question_{vid}.png", dpi=600)
+    plt.close()
 
 
-# 1. Define full labels for evaluation criteria
-question_map = {
-    'Q5': "Preservation of\nkey information",
-    'Q4': "Depiction of\nhand function",
-    'Q3': "Contextual\nclarity",
-    'Q2': "Visibility of difficulties or\n compensation strategies",
-    'Q1': "Representation of\nhand movements"
-}
+# ---------------- Create combined plot: average per video ----------------
 
-# 2. Prepare list of full question labels (for correct order)
-questions = [
+
+# Paths to the images
+image_paths = [
+    "Figures/HumanEvaluation/Average_Question.png",
+    "Figures/HumanEvaluation/Average_Question_1.png",
+    "Figures/HumanEvaluation/Average_Question_2.png",
+    "Figures/HumanEvaluation/Average_Question_3.png",
+    "Figures/HumanEvaluation/Average_Question_4.png",
+    "Figures/HumanEvaluation/Average_Question_5.png",
+]
+
+# Load images
+images = [Image.open(p) for p in image_paths]
+
+# Create matplotlib figure
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(12, 10))
+axs = axs.flatten()
+
+# Plot each image
+for ax, img, title in zip(axs, images, ["Average", "Video 1", "Video 2", "Video 3", "Video 4", "Video 5"]):
+    ax.imshow(img)
+    ax.set_title(title, fontsize=14)
+    ax.axis('off')
+
+plt.tight_layout()
+plt.savefig("Figures/HumanEvaluation/Combined_Ratings_Grid.png", dpi=300)
+plt.savefig("Figures/FigureA3.png", dpi=300)
+plt.close()
+
+
+# ---------------- Plot with all the ratings ----------------
+
+
+# ------------------- Configuration -------------------
+questions = ['Q1', 'Q2', 'Q3', 'Q4', 'Q5']
+question_labels = [
     "Preservation of\nkey information", 
     "Depiction of\nhand function", 
     "Contextual\nclarity", 
-    "Visibility of difficulties or\n compensation strategies", 
+    "Visibility of difficulties or\ncompensatory strategies", 
     "Representation of\nhand movements"
 ]
+ordered_algorithms = ['CA–SUM', 'CTVSUM', 'DR-DSN']
+colors = ['crimson', 'cornflowerblue', 'k']
 
-# 3. Prepare participant_ratings in long format
-participant_ratings = df.melt(
-    id_vars=['Participant ID', 'Video', 'Summary', 'Algorithm'],
-    value_vars=['Q1', 'Q2', 'Q3', 'Q4', 'Q5'],
-    var_name='QuestionCode',
-    value_name='Rating'
-)
-participant_ratings['Question'] = participant_ratings['QuestionCode'].map(question_map)
-participant_ratings = participant_ratings[['Algorithm', 'Question', 'Rating']]
+# ------------------- Melt to long format -------------------
+df_long = df.melt(id_vars=['Participant ID', 'Video', 'Algorithm'],
+                  value_vars=questions,
+                  var_name='Question', value_name='Rating')
 
-# 4. Set plotting order and colors
-ordered_algorithms = ['DR-DSN', 'CTVSUM', 'CA–SUM']
-colors = ['k', 'cornflowerblue', 'crimson']
+# Ensure consistent order for plotting
+df_long['Question'] = pd.Categorical(df_long['Question'], categories=questions, ordered=True)
+df_long['Algorithm'] = pd.Categorical(df_long['Algorithm'], categories=ordered_algorithms, ordered=True)
 
-# 5. Plotting
+# ------------------- Plot -------------------
 fig, ax = plt.subplots(figsize=(10, 5))
 
 for i, algo in enumerate(ordered_algorithms):
-    # Get means and stds for the current algorithm
-    algo_data = summary_data_q[summary_data_q['Algorithm'] == algo].set_index('Question').reindex(questions)
-    means = algo_data['mean'].values
-    stds = algo_data['std'].fillna(0).values
+    df_algo = df_long[df_long['Algorithm'] == algo]
+    for pid in df_algo['Participant ID'].unique():
+        df_part = df_algo[df_algo['Participant ID'] == pid]
+    
+        # Average ratings across videos per question
+        df_part_avg = (
+            df_part.groupby('Question')['Rating']
+            .mean()
+            .reindex(questions)
+            .reset_index()
+        )
 
-    # Vertical jitter to avoid overlapping
-    jitter = (i - len(ordered_algorithms) / 2) * 0.1
-    y_positions = np.arange(len(questions)) + jitter
+        y_vals = np.arange(len(questions)) + (i - 1) * 0.1  # vertical jitter by algorithm
+        ax.plot(df_part_avg['Rating'].values, y_vals, marker='o',
+                color=colors[i], linewidth=1)
 
-    # Plot group-level error bars
-    ax.errorbar(means, y_positions, xerr=stds, label=algo, marker='o',
-                linestyle='-', color=colors[i], capsize=4)
+# Set labels and ticks
+ax.set_yticks(np.arange(len(questions)))
+ax.set_yticklabels(question_labels)
 
-    # Plot individual participant ratings
-    algo_ratings = participant_ratings[participant_ratings['Algorithm'] == algo]
-    for j, q in enumerate(questions):
-        ratings = algo_ratings[algo_ratings['Question'] == q]['Rating'].values
-        ax.scatter(ratings, np.full_like(ratings, j + jitter),
-                   color=colors[i], alpha=0.7, s=10)
-
-# 6. Custom legend
+# Create the legend elements manually
 legend_elements = [
-    Line2D([0], [0], marker='o', color='w', label=algo, markerfacecolor=colors[i], markersize=8)
-    for i, algo in enumerate(ordered_algorithms)
+    Line2D([0], [0], marker='o', color='w', label='DR-DSN', markerfacecolor='black', markersize=8),
+    Line2D([0], [0], marker='o', color='w', label='CTVSUM', markerfacecolor='cornflowerblue', markersize=8),
+    Line2D([0], [0], marker='o', color='w', label='CA-SUM', markerfacecolor='crimson', markersize=8)
 ]
+
+# Add the legend to your plot
 ax.legend(handles=legend_elements, title="Algorithm", fontsize=12, title_fontsize=12)
 
-# 7. Y-axis ticks
-ax.set_yticks(np.arange(len(questions)))
-ax.set_yticklabels(questions)
-
-# 8. Styling and labels
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.set_xlabel("Participant Rating", fontsize=14)
+# Formatting
+ax.set_xlabel("Participant rating", fontsize=14)
 ax.set_xlim(0.5, 5.5)
 ax.set_ylim(-0.5, len(questions) - 0.5)
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
 ax.tick_params(axis='x', labelsize=14)
 ax.tick_params(axis='y', labelsize=14)
+ax.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, alpha=0.8)
 
 plt.tight_layout()
 plt.savefig("Figures/HumanEvaluation/Average_Question_IndividualRatings.png", dpi=600)
-plt.show()
+plt.savefig("Figures/FigureA2.png", dpi=600)
+plt.close()
+
+# ------------------- Plot per video -------------------
+videos = df_long['Video'].unique()
+
+for video in videos:
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    df_video = df_long[df_long['Video'] == video]
+
+    for i, algo in enumerate(ordered_algorithms):
+        df_algo = df_video[df_video['Algorithm'] == algo]
+
+        for pid in df_algo['Participant ID'].unique():
+            df_part = df_algo[df_algo['Participant ID'] == pid]
+
+            # No averaging across videos now — keep all questions for this video
+            df_part_sorted = (
+                df_part.groupby('Question')['Rating']
+                .mean()  # still average across possibly multiple entries per question
+                .reindex(questions)
+                .reset_index()
+            )
+
+            y_vals = np.arange(len(questions)) + (i - 1) * 0.1  # jitter
+            ax.plot(df_part_sorted['Rating'].values, y_vals, marker='o',
+                    color=colors[i], linewidth=1)
+
+    # Set labels and ticks
+    ax.set_yticks(np.arange(len(questions)))
+    ax.set_yticklabels(question_labels)
+
+    # Legend
+    ax.legend(handles=legend_elements, title="Algorithm", fontsize=12, title_fontsize=12)
+
+    # Formatting
+    ax.set_xlabel("Participant rating", fontsize=14)
+    ax.set_xlim(0.5, 5.5)
+    ax.set_ylim(-0.5, len(questions) - 0.5)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.tick_params(axis='x', labelsize=14)
+    ax.tick_params(axis='y', labelsize=14)
+
+    plt.tight_layout()
+    plt.savefig(f"Figures/HumanEvaluation/Average_Question_IndividualRatings_{video}.png", dpi=600)
+    plt.close()
 
 
 # ---------------- Statistics ----------------
@@ -714,3 +844,69 @@ if p < 0.05:
 
     print(posthocs_algo[['A', 'B', 'T', 'p-unc', 'p-corr', 'p-adjust']])
 
+
+# ---------------- Computational evaluation ----------------
+
+
+# Load data
+data_path = '../../01_Data/Results/Computational_Evaluation.csv'
+comp_data = pd.read_csv(data_path)
+
+# Load human ratings
+human_data_path = '../../01_Data/Results/Human_Evaluation.csv'
+human_df = pd.read_csv(human_data_path)
+
+# Compute mean human score across Q1–Q5
+human_df['MeanRating'] = human_df[['Q1', 'Q2', 'Q3', 'Q4', 'Q5']].mean(axis=1)
+
+# Aggregate mean ratings by video and algorithm
+human_avg = (
+    human_df.groupby(['Video', 'Algorithm'])['MeanRating']
+    .mean()
+    .reset_index()
+)
+
+# Filter by split and specific videos
+target_videos = ['SCI02_01', 'SCI03_06', 'SCI08_32', 'SCI17_10', 'SCI21_09']
+comp_data = comp_data[(comp_data['Split'] == 0) & (comp_data['Video'].isin(target_videos))]
+
+# Adjust names
+comp_data['Algorithm'] = comp_data['Algorithm'].replace({
+    'pytorch-CTVSUM': 'CTVSUM',
+    'pytorch-vsumm-reinforce': 'DR-DNS',
+})
+
+# Adjust names
+comp_data['Video'] = comp_data['Video'].replace({
+    'SCI02_01': '1',
+    'SCI03_06': '2',
+    'SCI08_32': '3',
+    'SCI17_10': '4',
+    'SCI21_09': '5'
+})
+
+# Ensure both 'Video' columns are of the same type
+comp_data['Video'] = comp_data['Video'].astype(str)
+human_avg['Video'] = human_avg['Video'].astype(str)
+
+# Merge with computational data
+merged_df = pd.merge(
+    comp_data,
+    human_avg,
+    on=['Video', 'Algorithm'],
+    how='inner'
+)
+
+# Drop 'Split' column
+merged_df = merged_df.drop(columns=['Split'])
+
+# # Correlation analysis
+# correlation_results = merged_df.corr(numeric_only=True)['MeanRating'].sort_values(ascending=False)
+# print("Correlation with Mean Human Rating:\n", correlation_results)
+
+
+for col in ['Representativeness', 'InformationLoss', 'Coverage', 'TemporalDistribution', 'Diversity']:
+    X = sm.add_constant(merged_df[[col]])
+    y = merged_df['MeanRating']
+    model = sm.OLS(y, X).fit()
+    print(f"\nModel with {col}:\n", model.summary())
