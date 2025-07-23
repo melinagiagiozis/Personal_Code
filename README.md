@@ -1,4 +1,4 @@
-# Quantification of lower limb kinematics during swimming in individuals with spinal cord injury
+# Video Summarization for Home-Based Egocentric Footage in Spinal Cord Injury Rehabilitation
 
 🎯 Objectives: The aim of this project is to apply unsupervised video summarization algorithms to egocentric, home-based videos recorded by individuals with spinal cord injury (SCI) and evaluate their performance.
 
