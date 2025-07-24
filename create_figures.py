@@ -156,11 +156,11 @@ for video_id in ['SCI02_01']:
     fig, axs = plt.subplots(3, 1, figsize=(16, 10), sharex=True)
 
     plot_highlighted(axs[0], rl_sum_scores, summary_positions['DR-DSN'], 
-                     '(A) DR-DSN', r'$\mathrm{Importance\ Score}_{DR-DSN}$', 'k')
+                     '(A) DR-DSN', r'$\mathrm{Importance\ Score}_{DR-DSN}$', '#3c466d')
     plot_highlighted(axs[1], cl_sum_scores, summary_positions['CTVSUM'], 
-                     '(B) CTVSUM', r'$\mathrm{Importance\ Score}_{CTVSUM}$', 'cornflowerblue')
+                     '(B) CTVSUM', r'$\mathrm{Importance\ Score}_{CTVSUM}$', '#a2a0c4')
     plot_highlighted(axs[2], ca_sum_scores, summary_positions['CA-SUM'], 
-                     '(C) CA-SUM', r'$\mathrm{Importance\ Score}_{CA-SUM}$', 'crimson')
+                     '(C) CA-SUM', r'$\mathrm{Importance\ Score}_{CA-SUM}$', '#c69b33')
     # axs[2].set_xlabel('Frames', size=13)
 
     # fig.align_ylabels(axs)
@@ -230,7 +230,7 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
     # Summary rows
     numerate = ['(B)', '(C)', '(D)']
     # colors = ['green', 'blue', 'purple']
-    colors = ['k', 'cornflowerblue', 'crimson']
+    colors = ['#3c466d', '#a2a0c4', '#c69b33']
     for i, (key, indices) in enumerate(summary_indices.items(), start=1):
         bars = np.zeros(n_total)
         bars[indices] = 1
@@ -317,9 +317,9 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
 
     colors = {
         'Full Video': 'lightgray',
-        'CA-SUM': 'crimson',
-        'CTVSUM': 'cornflowerblue',
-        'DR-DSN': 'k'
+        'CA-SUM': '#c69b33',
+        'CTVSUM': '#a2a0c4',
+        'DR-DSN': '#3c466d'
     }
 
     # Step 1: Create list of rows to plot (hist or thumb)
@@ -380,7 +380,7 @@ for video in ['SCI02_01', 'SCI02_07', 'SCI02_16',
             # # Color thumbnail frames black (on top)
             # for idx in thumb_indices:
             #     if 0 <= idx < n_total:
-            #         bar_colors[idx] = 'k'
+            #         bar_colors[idx] = '#3c466d'
 
             if label == 'DR-DSN':
                 y_pos = max(scores) - 0.04 * (max(scores) - min(scores))  # 2% lower

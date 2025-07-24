@@ -23,6 +23,9 @@ from PIL import Image
 data_path = '../../01_Data/Results/Human_Evaluation.csv'
 df = pd.read_csv(data_path)
 
+# Uniform notation
+df['Algorithm'] = df['Algorithm'].str.replace('–', '-', regex=False)
+
 # Compute mean score across all questions per row
 df["MeanScore"] = df[["Q1", "Q2", "Q3", "Q4", "Q5"]].mean(axis=1)
 
@@ -131,7 +134,7 @@ for q in questions:
 
 # Combine all question summaries into one table
 combined_stats = pd.concat(question_stats.values(), axis=1)
-print(combined_stats)
+# print(combined_stats)
 
 # ---------------- Heatmap averages (Video x Algorthm) ----------------
 
@@ -140,7 +143,7 @@ mean_scores = df.groupby(["Video", "Algorithm"])["MeanScore"].mean().unstack()
 std_scores = df.groupby(["Video", "Algorithm"])["MeanScore"].std().unstack()
 
 # Reorder columns
-ordered_columns = ['DR-DSN', 'CTVSUM', 'CA–SUM']
+ordered_columns = ['DR-DSN', 'CTVSUM', 'CA-SUM']
 mean_scores = mean_scores[ordered_columns]
 std_scores = std_scores[ordered_columns]
 
@@ -196,7 +199,7 @@ for q in questions:
     std_scores = data_q.pivot_table(index='Video', columns='Algorithm', values='std_rating')
 
     # Ensure consistent column order
-    ordered_columns = ['DR-DSN', 'CTVSUM', 'CA–SUM']
+    ordered_columns = ['DR-DSN', 'CTVSUM', 'CA-SUM']
     mean_scores = mean_scores.reindex(columns=ordered_columns)
     std_scores = std_scores.reindex(columns=ordered_columns)
 
@@ -237,7 +240,7 @@ for i, q in enumerate(questions):
     std_scores = data_q.pivot_table(index='Video', columns='Algorithm', values='std_rating')
 
     # Ensure consistent column order
-    ordered_columns = ['DR-DSN', 'CTVSUM', 'CA–SUM']
+    ordered_columns = ['DR-DSN', 'CTVSUM', 'CA-SUM']
     mean_scores = mean_scores.reindex(columns=ordered_columns)
     std_scores = std_scores.reindex(columns=ordered_columns)
 
@@ -294,8 +297,6 @@ plt.xlim(0.8, 5.2)  # Adjust based on your scoring range
 plt.tight_layout()
 plt.savefig("Figures/HumanEvaluation/RaterBias.png", dpi=600)
 plt.close()
-
-
 
 # Define Likert scale labels (adjust if your labels are different)
 likert_labels = {
@@ -416,7 +417,7 @@ algorithms = df_long['Algorithm'].unique()
 
 # Define question order and algorithm order
 questions = ['Q5', 'Q4', 'Q3', 'Q2', 'Q1']
-ordered_algorithms = ['DR-DSN', 'CTVSUM', 'CA–SUM']
+ordered_algorithms = ['DR-DSN', 'CTVSUM', 'CA-SUM']
 colors = sns.color_palette("rocket_r", n_colors=3)
 
 # Plot per video
@@ -462,12 +463,12 @@ for vid in sorted(plot_data['Video'].unique()):
 plot_data = df_long.groupby(['Video', 'Algorithm', 'Question'])['Rating'].agg(['mean', 'std']).reset_index()
 
 # Define algorithm order and colors
-ordered_algorithms = ['DR-DSN', 'CTVSUM', 'CA–SUM']
+ordered_algorithms = ['DR-DSN', 'CTVSUM', 'CA-SUM']
 videos = [1, 2, 3, 4, 5]
 # colors = sns.color_palette("rocket_r", n_colors=3)
 # colors = ['m', 'blue', 'green']
 # colors = ['#c4a148', '#c86340', '#60adcd']
-colors = ['k', 'cornflowerblue', 'crimson']
+colors = ['#3c466d', '#a2a0c4', '#c69b33']
 
 # Plot per question with videos on the y-axis
 for q in questions:
@@ -505,7 +506,12 @@ for q in questions:
     plt.close()
 
 
-# ---------------- Average over everything to show results per Q ----------------
+
+
+######################## Figures for the Manuscript ########################
+
+
+# ---------------- Figure A3 ----------------
 
 
 # Compute average over all videos for each (Question, Algorithm)
@@ -532,26 +538,16 @@ for i, algo in enumerate(ordered_algorithms):
     algo_data = summary_data_q[summary_data_q['Algorithm'] == algo].set_index('Question').reindex(questions)
     means = algo_data['mean'].values
     stds = algo_data['std'].fillna(0).values
-    # ax.errorbar(means, questions, xerr=stds, label=algo, marker='o',
-    #             linestyle='-', color=colors[i], capsize=4)
-    for i, algo in enumerate(ordered_algorithms):
-        algo_data = summary_data_q[summary_data_q['Algorithm'] == algo].set_index('Question').reindex(questions)
-        means = algo_data['mean'].values
-        stds = algo_data['std'].fillna(0).values
-        
-        # Apply vertical jitter: offset each algorithm slightly on the y-axis
-        jitter = (i - len(ordered_algorithms) / 2) * 0.1  # Adjust 0.1 for spacing
-        y_positions = np.arange(len(questions)) - jitter
-        
-        ax.errorbar(means, y_positions, xerr=stds, label=algo, marker='o',
-                    linestyle='-', color=colors[i], capsize=4)
+    
+    # Apply vertical jitter: offset each algorithm slightly on the y-axis
+    jitter = (i - len(ordered_algorithms) / 2) * 0.1  # Adjust 0.1 for spacing
+    y_positions = np.arange(len(questions)) - jitter
+    
+    ax.errorbar(means, y_positions, xerr=stds, label=algo, marker='o',
+                linestyle='-', color=colors[i], capsize=4)
 
 # Custom legend: only markers
-algo_colors = {
-    'DR-DSN': 'k',
-    'CTVSUM': 'cornflowerblue',
-    'CA–SUM': 'crimson'
-}
+algo_colors = {'DR-DSN': '#3c466d', 'CTVSUM': '#a2a0c4', 'CA-SUM': '#c69b33'}
 
 legend_elements = [
     Line2D([0], [0], marker='o', color='w', label=algo,
@@ -561,27 +557,34 @@ legend_elements = [
 ax.legend(handles=legend_elements, title="Algorithm", fontsize=12, title_fontsize=12)
 
 ax.set_yticks(np.arange(len(questions)))
+# ax.set_yticklabels([
+#     "Preservation of\nkey information", 
+#     "Depiction of\nhand function", 
+#     "Contextual\nclarity", 
+#     "Visibility of difficulties or\n compensation strategies", 
+#     "Representation of\nhand movements"
+# ])
 ax.set_yticklabels([
-    "Preservation of\nkey information", 
-    "Depiction of\nhand function", 
-    "Contextual\nclarity", 
-    "Visibility of difficulties or\n compensation strategies", 
-    "Representation of\nhand movements"
+    "C5: Preservation of \nkey information", 
+    "C4: Depiction of \nhand function", 
+    "C3: Contextual\nclarity", 
+    "C2: Visibility of \ndifficulties and\ncompensation", 
+    "C1: Inclusion \n of hand \nmovements"
 ])
 
 # Axis formatting
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
-ax.set_xlabel("Participant rating", fontsize=14)
+ax.set_xlabel("Participant rating", fontsize=16)
 ax.set_xlim(0.5, 5.5)
 ax.set_ylim(-0.5, 4.5)
 ax.tick_params(axis='x', labelsize=14)
-ax.tick_params(axis='y', labelsize=14)
+ax.tick_params(axis='y', labelsize=16)
 ax.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, alpha=0.8)
 
 plt.tight_layout()
 plt.savefig("Figures/HumanEvaluation/Average_Question.png", dpi=600)
-plt.savefig("Figures/Figure2.png", dpi=600)
+# plt.savefig("Figures/Figure2.png", dpi=600)
 plt.close()
 
 
@@ -613,11 +616,11 @@ for vid in videos:
     # Axis formatting
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.set_xlabel("Participant rating", fontsize=14)
+    ax.set_xlabel("Participant rating", fontsize=16)
     ax.set_xlim(0.5, 5.5)
     ax.set_ylim(-0.5, 4.5)
     ax.tick_params(axis='x', labelsize=14)
-    ax.tick_params(axis='y', labelsize=14)
+    ax.tick_params(axis='y', labelsize=16)
     ax.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, alpha=0.8)
 
     plt.tight_layout()
@@ -646,14 +649,14 @@ fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(12, 10))
 axs = axs.flatten()
 
 # Plot each image
-for ax, img, title in zip(axs, images, ["Average", "Video 1", "Video 2", "Video 3", "Video 4", "Video 5"]):
+for ax, img, title in zip(axs, images, ["Overall", "Video 1", "Video 2", "Video 3", "Video 4", "Video 5"]):
     ax.imshow(img)
-    ax.set_title(title, fontsize=14)
+    ax.set_title(title, fontsize=12)
     ax.axis('off')
 
 plt.tight_layout()
 plt.savefig("Figures/HumanEvaluation/Combined_Ratings_Grid.png", dpi=300)
-plt.savefig("Figures/FigureA3.png", dpi=300)
+plt.savefig("Figures/FigureA2.png", dpi=300)
 plt.close()
 
 
@@ -661,7 +664,7 @@ plt.close()
 
 
 # ------------------- Configuration -------------------
-questions = ['Q1', 'Q2', 'Q3', 'Q4', 'Q5']
+questions = ['Q5', 'Q4', 'Q3', 'Q2', 'Q1']
 question_labels = [
     "Preservation of\nkey information", 
     "Depiction of\nhand function", 
@@ -669,7 +672,7 @@ question_labels = [
     "Visibility of difficulties or\ncompensatory strategies", 
     "Representation of\nhand movements"
 ]
-ordered_algorithms = ['CA–SUM', 'CTVSUM', 'DR-DSN']
+ordered_algorithms = ['CA-SUM', 'CTVSUM', 'DR-DSN']
 colors = ['crimson', 'cornflowerblue', 'k']
 
 # ------------------- Melt to long format -------------------
@@ -727,7 +730,7 @@ ax.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, alpha=0.
 
 plt.tight_layout()
 plt.savefig("Figures/HumanEvaluation/Average_Question_IndividualRatings.png", dpi=600)
-plt.savefig("Figures/FigureA2.png", dpi=600)
+# plt.savefig("Figures/FigureA2.png", dpi=600)
 plt.close()
 
 # ------------------- Plot per video -------------------
@@ -777,6 +780,381 @@ for video in videos:
     plt.close()
 
 
+# # ---------------- Statistics ----------------
+
+
+# ###### Are the evaluation questions (Q1–Q5) rated differently?
+
+# # Average across videos and algorithms per participant per question
+# participant_avg = (
+#     df_long.groupby(['Participant ID', 'Question'])['Rating']
+#     .mean()
+#     .unstack()
+# )
+
+# # Friedman test
+# stat, p = friedmanchisquare(*[participant_avg[q] for q in participant_avg.columns])
+
+# # Calculate Kendall’s W
+# k = len(participant_avg.columns)  # number of algorithms
+# n = len(participant_avg)          # number of raters or participants
+# kendalls_W = stat / (n * (k - 1))
+
+# print(f"Friedman χ² = {stat:.3f}, p = {p:.4f}, Kendall’s W = {kendalls_W:.3f}")
+
+# if p<0.05:
+#     # Use pairwise_tests instead of deprecated pairwise_ttests
+#     posthocs = pg.pairwise_tests(
+#         data=df_long,
+#         dv='Rating',
+#         within='Question',
+#         subject='Participant ID',
+#         padjust='bonf'  # Bonferroni correction
+#     )
+
+#     # Display only relevant columns
+#     print(posthocs[['A', 'B', 'T', 'p-unc', 'p-corr', 'p-adjust']])
+
+
+# # ------------------- Figure 2A -------------------
+
+
+# # Compute average and std across algorithms for each question
+# avg_data = (
+#     summary_data_q
+#     .groupby('Question')
+#     .agg(mean=('mean', 'mean'), std=('mean', 'std'))  # std of the means
+#     .reindex(questions)  # Ensure consistent order
+# )
+
+# # Plot
+# fig, ax = plt.subplots(figsize=(10, 5))
+
+# y_positions = np.arange(len(questions))
+
+# ax.errorbar(
+#     avg_data['mean'], y_positions,
+#     xerr=avg_data['std'],
+#     marker='o',  # Diamond marker for clarity
+#     linestyle='-', color='black',
+#     markerfacecolor='black', markeredgecolor='white',
+#     markersize=8, capsize=0
+# )
+
+# if p < 0.05:
+#     posthocs = pg.pairwise_tests(
+#         data=df_long,
+#         dv='Rating',
+#         within='Question',
+#         subject='Participant ID',
+#         padjust='bonf'
+#     )
+
+#     significant_pairs = posthocs[posthocs['p-corr'] < 0.05]
+#     question_positions = {q: i for i, q in enumerate(questions)}
+
+#     def draw_significance_bar(ax, q1, q2, offset_idx, text='*'):
+#         y1 = question_positions[q1]
+#         y2 = question_positions[q2]
+#         y_start, y_end = min(y1, y2), max(y1, y2)
+
+#         base_x = 4.7
+#         horizontal_offset = 0.15 * offset_idx
+#         x = base_x + horizontal_offset
+
+#         # Vertical line and caps
+#         ax.plot([x, x], [y_start, y_end], color='#5C5C5C', lw=0.8, clip_on=False)
+#         cap_width = 0.03
+#         ax.plot([x - cap_width, x], [y_start, y_start], color='#5C5C5C', lw=0.8, clip_on=False)
+#         ax.plot([x - cap_width, x], [y_end, y_end], color='#5C5C5C', lw=0.8, clip_on=False)
+
+#         # Asterisk label (rotated)
+#         ax.text(x + 0.01, (y_start + y_end) / 2, text, va='center', ha='left', 
+#                 fontsize=10, rotation=90, clip_on=False)
+
+#     for idx, (_, row) in enumerate(significant_pairs.iterrows()):
+#         q1, q2 = row['A'], row['B']
+#         p_val = row['p-corr']
+#         if p_val < 0.001:
+#             label = '***'
+#         elif p_val < 0.01:
+#             label = '**'
+#         else:
+#             label = '*'
+#         draw_significance_bar(ax, q1, q2, offset_idx=idx, text=label)
+
+# # Y-tick labels
+# ax.set_yticks(np.arange(len(questions)))
+# ax.set_yticklabels([
+#     "Preservation of\nkey information", 
+#     "Depiction of\nhand function", 
+#     "Contextual\nclarity", 
+#     "Visibility of difficulties or\n compensation strategies", 
+#     "Representation of\nhand movements"
+# ])
+
+# # Style
+# ax.tick_params(axis='x', labelsize=14)
+# ax.tick_params(axis='y', labelsize=14)
+# ax.spines['top'].set_visible(False)
+# ax.spines['right'].set_visible(False)
+# ax.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, alpha=0.8)
+# ax.set_xlim(0.5, 5.4)
+# ax.set_ylim(-0.5, 4.5)
+
+# plt.tight_layout()
+# plt.savefig("Figures/HumanEvaluation/Average_Question_significances.png", dpi=600)
+# # plt.savefig("Figures/Figure2A.png", dpi=600)
+# plt.close()
+
+
+# # ------------------- Figure 2B -------------------
+
+
+# # Compute average rating per algorithm (across questions)
+# avg_per_algo = (
+#     summary_data_q
+#     .groupby('Algorithm')
+#     .agg(mean=('mean', 'mean'), std=('mean', 'std'))  # std across criteria means
+#     .reindex(ordered_algorithms)  # maintain order
+# )
+
+# # Prepare y positions and markers
+# y_positions = np.arange(len(ordered_algorithms))
+# marker_dict = {'DR-DSN': 'D', 'CTVSUM': 'X', 'CA-SUM': 's'}
+# color_dict = {'DR-DSN': 'purple', 'CTVSUM': 'cornflowerblue', 'CA-SUM': 'crimson'}
+
+# # Plot
+# fig, ax = plt.subplots(figsize=(8, 3.5))
+
+# for i, algo in enumerate(ordered_algorithms):
+#     row = avg_per_algo.loc[algo]
+#     ax.errorbar(
+#         row['mean'], i, xerr=row['std'],
+#         fmt=marker_dict[algo],
+#         markersize=8,
+#         color=color_dict[algo],
+#         markerfacecolor=color_dict[algo],
+#         markeredgecolor='white',
+#         linestyle='-', capsize=4, label=algo
+#     )
+
+# # Format y-axis
+# ax.set_yticks(y_positions)
+# ax.set_yticklabels(ordered_algorithms)
+# ax.set_xlabel("Participant rating", fontsize=14)
+# ax.set_xlim(0.5, 5.4)
+# ax.set_ylim(-0.5, len(ordered_algorithms)-0.5)
+
+# # Style
+# ax.tick_params(axis='x', labelsize=12)
+# ax.tick_params(axis='y', labelsize=12)
+# ax.spines['top'].set_visible(False)
+# ax.spines['right'].set_visible(False)
+# # ax.grid(True, axis='x', linestyle='--', linewidth=0.5, alpha=0.8)
+# ax.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, alpha=0.8)
+
+# plt.tight_layout()
+# plt.savefig("Figures/HumanEvaluation/Average_Algorithm_over_Questions.png", dpi=600)
+# # plt.savefig("Figures/Figure2B.png", dpi=600)
+# plt.close()
+
+
+# # ---------------- Figure 2C ----------------
+
+
+# # Plot: Questions on y-axis, average rating on x-axis
+# fig, ax = plt.subplots(figsize=(10, 5))
+
+# for i, algo in enumerate(ordered_algorithms):
+#     algo_data = summary_data_q[summary_data_q['Algorithm'] == algo].set_index('Question').reindex(questions)
+#     means = algo_data['mean'].values
+#     stds = algo_data['std'].fillna(0).values
+    
+#     # Apply vertical jitter: offset each algorithm slightly on the y-axis
+#     jitter = (i - len(ordered_algorithms) / 2) * 0.1
+#     y_positions = np.arange(len(questions)) - jitter
+    
+#     marker_dict = {
+#         'DR-DSN': 'D',
+#         'CTVSUM': 'X',
+#         'CA-SUM': 's'
+#     }
+
+#     ax.errorbar(means, y_positions, xerr=stds, label=algo, marker=marker_dict[algo],
+#                 linestyle='-', color=colors[i], markeredgecolor='w', markerfacecolor=colors[i], capsize=0)
+
+# # Custom legend: only markers
+# algo_colors = {
+#     'DR-DSN': 'purple',
+#     'CTVSUM': 'cornflowerblue',
+#     'CA-SUM': 'crimson'
+# }
+
+# # Create the legend elements manually
+# legend_elements = [
+#     Line2D([0], [0], marker='D', color='w', label='DR-DSN', markerfacecolor='black', markersize=8),
+#     Line2D([0], [0], marker='X', color='w', label='CTVSUM', markerfacecolor='cornflowerblue', markersize=8),
+#     Line2D([0], [0], marker='s', color='w', label='CA-SUM', markerfacecolor='crimson', markersize=8)
+# ]
+# ax.legend(handles=legend_elements, title="Algorithm", fontsize=12, title_fontsize=12, loc='upper left')
+
+# # Y-tick labels
+# ax.set_yticks(np.arange(len(questions)))
+# ax.set_yticklabels([
+#     "Preservation of\nkey information", 
+#     "Depiction of\nhand function", 
+#     "Contextual\nclarity", 
+#     "Visibility of difficulties or\n compensation strategies", 
+#     "Representation of\nhand movements"
+# ])
+
+# # Axis formatting
+# ax.spines['top'].set_visible(False)
+# ax.spines['right'].set_visible(False)
+# ax.set_xlabel("Participant rating", fontsize=14)
+# ax.set_xlim(0.5, 5.4)
+# ax.set_ylim(-0.5, 4.5)
+# ax.tick_params(axis='x', labelsize=14)
+# ax.tick_params(axis='y', labelsize=14)
+# ax.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, alpha=0.8)
+
+# plt.tight_layout()
+# plt.savefig("Figures/HumanEvaluation/Average_Question_per_Algorithm.png", dpi=600)
+# # plt.savefig("Figures/Figure2C.png", dpi=600)
+# plt.close()
+
+
+# ---------------- Figure 2 – Combined ----------------
+
+
+# Average per question (Figure 2A)
+avg_data = (
+    summary_data_q
+    .groupby('Question')
+    .agg(mean=('mean', 'mean'), std=('mean', 'std'))
+    .reindex(questions)
+)
+
+# Average per algorithm (Figure 2B)
+avg_per_algo = (
+    summary_data_q
+    .groupby('Algorithm')
+    .agg(mean=('mean', 'mean'), std=('mean', 'std'))
+    .reindex(ordered_algorithms)
+)
+
+# Figure with A and B above C
+fig = plt.figure(figsize=(13, 10))
+gs = fig.add_gridspec(2, 2, height_ratios=[1, 2])
+axes = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[1, :])]
+marker_dict = {'DR-DSN': 'D', 'CTVSUM': 'X', 'CA-SUM': 's'}
+color_dict = {'DR-DSN': '#3c466d', 'CTVSUM': '#a2a0c4', 'CA-SUM': '#c69b33'}
+
+# -------------- Plot 2A – Average per Question (top left) --------------
+y_positions = np.arange(len(questions))
+
+axes[0].errorbar(avg_data['mean'], y_positions, xerr=avg_data['std'], marker='o',
+                 linestyle='-', color='black', markerfacecolor='black', markeredgecolor='white',
+                 markersize=8, capsize=0, label='Average')
+
+# Add individual participant lines in the background
+participant_matrix = (
+    df_long
+    .groupby(['Participant ID', 'Question'])['Rating']
+    .mean()
+    .unstack()
+    .reindex(columns=questions)
+)
+for _, row in participant_matrix.iterrows():
+    axes[0].plot(row.values, np.arange(len(questions)), color='gray', 
+                 alpha=0.3, linewidth=1, label='Individual')
+
+axes[0].set_yticks(y_positions)
+axes[0].set_yticklabels(["C5", "C4", "C3", "C2", "C1"])
+axes[0].set_ylim(-0.5, 4.5)
+handles, labels = axes[0].get_legend_handles_labels()
+axes[0].legend(handles[-2:], labels[-2:])
+
+# -------------- Plot 2B – Average per Algorithm (top right) --------------
+y_positions = np.arange(len(ordered_algorithms))
+for i, algo in enumerate(ordered_algorithms):
+    row = avg_per_algo.loc[algo]
+    axes[1].errorbar(row['mean'], i, xerr=row['std'],
+                     fmt=marker_dict[algo], markersize=8,
+                     color=color_dict[algo],
+                     markerfacecolor=color_dict[algo],
+                     markeredgecolor='white', linestyle='-', capsize=0)
+    
+# Compute individual participant averages per algorithm
+participant_algo_avg = (
+    df_long
+    .groupby(['Participant ID', 'Algorithm'])['Rating']
+    .mean()
+    .unstack()  # rows = Participant ID, columns = Algorithm
+    .reindex(columns=ordered_algorithms)  # ensure order matches plot
+)
+
+# Plot faint individual participant averages
+for _, row in participant_algo_avg.iterrows():
+    for i, algo in enumerate(ordered_algorithms):
+        axes[1].plot(row[algo], i, marker=marker_dict[algo],  markeredgecolor='white',
+                     color=color_dict[algo], alpha=0.2, zorder=0)
+
+axes[1].set_yticks(y_positions)
+axes[1].set_yticklabels(ordered_algorithms)
+axes[1].set_ylim(-0.5, len(ordered_algorithms)-0.5)
+
+# -------------- Plot 2C – Ratings per Algorithm (bottom, spans both columns) --------------
+for i, algo in enumerate(ordered_algorithms[::-1]):
+    algo_data = summary_data_q[summary_data_q['Algorithm'] == algo].set_index('Question').reindex(questions)
+    means = algo_data['mean'].values
+    stds = algo_data['std'].fillna(0).values
+    jitter = (i - len(ordered_algorithms) / 2) * 0.1
+    y_positions = np.arange(len(questions)) - jitter
+    axes[2].errorbar(means, y_positions, xerr=stds, label=algo, marker=marker_dict[algo],
+                     linestyle='-', color=color_dict[algo], markeredgecolor='w',
+                     markerfacecolor=color_dict[algo], capsize=0)
+axes[2].set_yticks(np.arange(len(questions)))
+axes[2].set_yticklabels([
+    "C5: Preservation of \nkey information", 
+    "C4: Depiction of \nhand function", 
+    "C3: Contextual\nclarity", 
+    "C2: Visibility of \ndifficulties and\ncompensation", 
+    "C1: Inclusion \n of hand \nmovements"
+])
+# axes[2].set_yticklabels([
+#     "C5: Key \ninformation", 
+#     "C4: Hand \nfunction", 
+#     "C3: Context", 
+#     "C2: Compensation", 
+#     "C1: Hand \nmovements"
+# ])
+axes[2].set_ylim(-0.5, 4.5)
+axes[2].legend(title="Algorithm", fontsize=14, title_fontsize=14, loc='upper left')
+
+# # Add (C1)–(C5) labels
+# short_labels = ["C5:", "C4:", "C3", "C2:", "C1:"]
+# for i, label in enumerate(short_labels):
+#     axes[2].text(-0.15, i, label, va='center', ha='right', fontsize=14,
+#                  transform=axes[2].get_yaxis_transform())
+
+# Shared styling
+for ax in axes:
+    ax.set_xlim(0.89, 5.4)
+    ax.set_xlabel("Participant rating", fontsize=14)
+    ax.tick_params(axis='x', labelsize=12)
+    ax.tick_params(axis='y', labelsize=14)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(True, axis='x', linestyle='--', linewidth=0.5, alpha=0.8)
+
+plt.tight_layout(rect=[0, 0, 1, 0.95])  # Add space above the plot
+plt.subplots_adjust(hspace=0.3)  # Increase spacing between the two rows
+plt.savefig("Figures/Figure2.png", dpi=600)
+plt.close()
+
+
 # ---------------- Statistics ----------------
 
 
@@ -812,6 +1190,30 @@ if p<0.05:
     # Display only relevant columns
     print(posthocs[['A', 'B', 'T', 'p-unc', 'p-corr', 'p-adjust']])
 
+# Define significance stars based on p-value
+def p_to_stars(p):
+    if p < 0.001:
+        return '***'
+    elif p < 0.01:
+        return '**'
+    elif p < 0.05:
+        return '*'
+    else:
+        return None
+
+# Map each question to y-axis position
+question_to_y = {q: i for i, q in enumerate(questions[::-1])}  # reverse due to y-axis order (C5 at top)
+
+# Collect bars to plot (y1, y2, stars)
+bar_annotations = []
+for _, row in posthocs.iterrows():
+    q1, q2 = row['A'], row['B']
+    p_val = row['p-corr']
+    stars = p_to_stars(p_val)
+    if stars:
+        y1, y2 = question_to_y[q1], question_to_y[q2]
+        bar_annotations.append((min(y1, y2), max(y1, y2), stars))
+
 
 ###### Are the algoritms rated differently?
 
@@ -843,6 +1245,145 @@ if p < 0.05:
     )
 
     print(posthocs_algo[['A', 'B', 'T', 'p-unc', 'p-corr', 'p-adjust']])
+
+
+# ---------------- Figure 2 – Significances ----------------
+
+
+# Average per question (Figure 2A)
+avg_data = (
+    summary_data_q
+    .groupby('Question')
+    .agg(mean=('mean', 'mean'), std=('mean', 'std'))
+    .reindex(questions)
+)
+
+# Average per algorithm (Figure 2B)
+avg_per_algo = (
+    summary_data_q
+    .groupby('Algorithm')
+    .agg(mean=('mean', 'mean'), std=('mean', 'std'))
+    .reindex(ordered_algorithms)
+)
+
+# Figure with A and B above C
+fig = plt.figure(figsize=(13, 10))
+gs = fig.add_gridspec(2, 2, height_ratios=[1, 2])
+axes = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[1, :])]
+marker_dict = {'DR-DSN': 'D', 'CTVSUM': 'X', 'CA-SUM': 's'}
+color_dict = {'DR-DSN': '#3c466d', 'CTVSUM': '#a2a0c4', 'CA-SUM': '#c69b33'}
+
+# -------------- Plot 2A – Average per Question (top left) --------------
+y_positions = np.arange(len(questions))
+
+axes[0].errorbar(avg_data['mean'], y_positions, xerr=avg_data['std'], marker='o',
+                 linestyle='-', color='black', markerfacecolor='black', markeredgecolor='white',
+                 markersize=8, capsize=0, label='Average')
+
+# Add individual participant lines in the background
+participant_matrix = (
+    df_long
+    .groupby(['Participant ID', 'Question'])['Rating']
+    .mean()
+    .unstack()
+    .reindex(columns=questions)
+)
+for _, row in participant_matrix.iterrows():
+    axes[0].plot(row.values, np.arange(len(questions)), color='gray', 
+                 alpha=0.3, linewidth=1, label='Individual')
+
+axes[0].set_yticks(y_positions)
+axes[0].set_yticklabels(["C5", "C4", "C3", "C2", "C1"])
+axes[0].set_ylim(-0.5, 4.5)
+handles, labels = axes[0].get_legend_handles_labels()
+axes[0].legend(handles[-2:], labels[-2:])
+
+# Add significance bars to Plot 2A
+for i, (y1, y2, stars) in enumerate(bar_annotations):
+    x = 5.2 + i * 0.05  # offset to the right of the plot
+    y_top = y2
+    y_bot = y1
+    axes[0].plot([x, x], [y_bot, y_top], color='black', linewidth=1)
+    axes[0].text(x + 0.02, (y_bot + y_top) / 2, stars, ha='left', va='center', fontsize=12)
+
+# -------------- Plot 2B – Average per Algorithm (top right) --------------
+y_positions = np.arange(len(ordered_algorithms))
+for i, algo in enumerate(ordered_algorithms):
+    row = avg_per_algo.loc[algo]
+    axes[1].errorbar(row['mean'], i, xerr=row['std'],
+                     fmt=marker_dict[algo], markersize=8,
+                     color=color_dict[algo],
+                     markerfacecolor=color_dict[algo],
+                     markeredgecolor='white', linestyle='-', capsize=0)
+    
+# Compute individual participant averages per algorithm
+participant_algo_avg = (
+    df_long
+    .groupby(['Participant ID', 'Algorithm'])['Rating']
+    .mean()
+    .unstack()  # rows = Participant ID, columns = Algorithm
+    .reindex(columns=ordered_algorithms)  # ensure order matches plot
+)
+
+# Plot faint individual participant averages
+for _, row in participant_algo_avg.iterrows():
+    for i, algo in enumerate(ordered_algorithms):
+        axes[1].plot(row[algo], i, marker=marker_dict[algo],  markeredgecolor='white',
+                     color=color_dict[algo], alpha=0.2, zorder=0)
+
+axes[1].set_yticks(y_positions)
+axes[1].set_yticklabels(ordered_algorithms)
+axes[1].set_ylim(-0.5, len(ordered_algorithms)-0.5)
+
+# -------------- Plot 2C – Ratings per Algorithm (bottom, spans both columns) --------------
+for i, algo in enumerate(ordered_algorithms[::-1]):
+    algo_data = summary_data_q[summary_data_q['Algorithm'] == algo].set_index('Question').reindex(questions)
+    means = algo_data['mean'].values
+    stds = algo_data['std'].fillna(0).values
+    jitter = (i - len(ordered_algorithms) / 2) * 0.1
+    y_positions = np.arange(len(questions)) - jitter
+    axes[2].errorbar(means, y_positions, xerr=stds, label=algo, marker=marker_dict[algo],
+                     linestyle='-', color=color_dict[algo], markeredgecolor='w',
+                     markerfacecolor=color_dict[algo], capsize=0)
+axes[2].set_yticks(np.arange(len(questions)))
+axes[2].set_yticklabels([
+    "C5: Preservation of \nkey information", 
+    "C4: Depiction of \nhand function", 
+    "C3: Contextual\nclarity", 
+    "C2: Visibility of \ndifficulties and\ncompensation", 
+    "C1: Inclusion \n of hand \nmovements"
+])
+# axes[2].set_yticklabels([
+#     "C5: Key \ninformation", 
+#     "C4: Hand \nfunction", 
+#     "C3: Context", 
+#     "C2: Compensation", 
+#     "C1: Hand \nmovements"
+# ])
+axes[2].set_ylim(-0.5, 4.5)
+axes[2].legend(title="Algorithm", fontsize=14, title_fontsize=14, loc='upper left')
+
+# # Add (C1)–(C5) labels
+# short_labels = ["C5:", "C4:", "C3", "C2:", "C1:"]
+# for i, label in enumerate(short_labels):
+#     axes[2].text(-0.15, i, label, va='center', ha='right', fontsize=14,
+#                  transform=axes[2].get_yaxis_transform())
+
+# Shared styling
+for ax in axes:
+    ax.set_xlim(0.89, 5.4)
+    ax.set_xlabel("Participant rating", fontsize=14)
+    ax.tick_params(axis='x', labelsize=12)
+    ax.tick_params(axis='y', labelsize=14)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(True, axis='x', linestyle='--', linewidth=0.5, alpha=0.8)
+
+plt.tight_layout(rect=[0, 0, 1, 0.95])  # Add space above the plot
+plt.subplots_adjust(hspace=0.3)  # Increase spacing between the two rows
+plt.savefig("Figures/Figure2_sig.png", dpi=600)
+plt.close()
+
 
 
 # ---------------- Computational evaluation ----------------
