@@ -541,8 +541,11 @@ for q in questions:
 ######################## Figures for the Manuscript ########################
 
 
-# ---------------- Figure A3 ----------------
+# ---------------- Figure 2 ----------------
 
+
+# Colors
+algo_colors = {'DR-DSN': '#3c466d', 'CTVSUM': '#a2a0c4', 'CA-SUM': '#c69b33'}
 
 # Compute average over all videos for each (Question, Algorithm)
 mean_data_q = (
@@ -560,6 +563,8 @@ std_data_q = (
 # Merge mean and std
 summary_data_q = pd.merge(mean_data_q, std_data_q, on=['Question', 'Algorithm'])
 summary_data_q.columns = ['Question', 'Algorithm', 'mean', 'std']
+marker_dict = {'DR-DSN': 'D', 'CTVSUM': 'X', 'CA-SUM': 's'}
+algo_colors = {'DR-DSN': '#3c466d', 'CTVSUM': '#a2a0c4', 'CA-SUM': '#c69b33'}
 
 # Plot: Questions on y-axis, average rating on x-axis
 fig, ax = plt.subplots(figsize=(10, 5))
@@ -573,14 +578,12 @@ for i, algo in enumerate(ordered_algorithms):
     jitter = (i - len(ordered_algorithms) / 2) * 0.1  # Adjust 0.1 for spacing
     y_positions = np.arange(len(questions)) - jitter
     
-    ax.errorbar(means, y_positions, xerr=stds, label=algo, marker='o',
-                linestyle='-', color=colors[i], capsize=4)
-
-# Custom legend: only markers
-algo_colors = {'DR-DSN': '#3c466d', 'CTVSUM': '#a2a0c4', 'CA-SUM': '#c69b33'}
+    ax.errorbar(means, y_positions, xerr=stds, label=algo, marker=marker_dict[algo],
+                color=algo_colors[algo], linestyle='-', markerfacecolor=algo_colors[algo], 
+                markeredgecolor='white', capsize=4)
 
 legend_elements = [
-    Line2D([0], [0], marker='o', color='w', label=algo,
+    Line2D([0], [0], marker=marker_dict[algo], color='w', label=algo,
            markerfacecolor=algo_colors[algo], markersize=8)
     for algo in ordered_algorithms
 ]
@@ -620,6 +623,7 @@ plt.close()
 
 # ---------------- Plot per video ----------------
 
+
 # Get unique video names
 videos = plot_data['Video'].unique()
 
@@ -636,8 +640,10 @@ for vid in videos:
         jitter = (i - len(ordered_algorithms) / 2) * 0.1  # vertical offset
         y_positions = np.arange(len(questions)) - jitter
 
-        ax.errorbar(means, y_positions, xerr=stds, label=algo, marker='o',
-                    linestyle='-', color=colors[i], capsize=4)
+        ax.errorbar(means, y_positions, xerr=stds, label=algo,  
+                    marker=marker_dict[algo], color=algo_colors[algo],
+                    linestyle='-', markerfacecolor=algo_colors[algo], 
+                    markeredgecolor='white', capsize=4)
 
     # Set y-axis
     ax.set_yticks(np.arange(len(questions)))
@@ -686,7 +692,7 @@ for ax, img, title in zip(axs, images, ["Overall", "Video 1", "Video 2", "Video 
 
 plt.tight_layout()
 plt.savefig("Figures/HumanEvaluation/Combined_Ratings_Grid.png", dpi=300)
-plt.savefig("Figures/FigureA2.png", dpi=300)
+plt.savefig("Figures/FigureA.png", dpi=300)
 plt.close()
 
 
@@ -704,6 +710,7 @@ question_labels = [
 ]
 ordered_algorithms = ['CA-SUM', 'CTVSUM', 'DR-DSN']
 colors = ['crimson', 'cornflowerblue', 'k']
+colors = ['#3c466d', '#a2a0c4', '#c69b33']
 
 # ------------------- Melt to long format -------------------
 df_long = df.melt(id_vars=['Participant ID', 'Video', 'Algorithm'],
@@ -760,7 +767,6 @@ ax.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, alpha=0.
 
 plt.tight_layout()
 plt.savefig("Figures/HumanEvaluation/Average_Question_IndividualRatings.png", dpi=600)
-# plt.savefig("Figures/FigureA2.png", dpi=600)
 plt.close()
 
 # ------------------- Plot per video -------------------
@@ -899,7 +905,8 @@ if p < 0.05:
         dv='Rating',
         within='Algorithm',
         subject='Participant ID',
-        padjust='bonf'
+        padjust='bonf',
+        parametric=True
     )
 
     if print_results:
@@ -917,6 +924,28 @@ for _, row in posthocs_algo.iterrows():
     if stars:
         y1, y2 = algo_to_y[a1], algo_to_y[a2]
         bar_annotations_algo.append((min(y1, y2), max(y1, y2), stars))
+
+
+###### Do participant ratings differ depending on the algorithm, 
+###### the evaluation criterion, or the interaction between them?
+
+
+# Test normality per Algorithm × Question combination
+df_long['Condition'] = df_long['Algorithm'].astype(str) + ' | ' + df_long['Question'].astype(str)
+normality_results = pg.normality(data=df_long, dv='Rating', group='Condition')
+# print(normality_results)
+
+# Two-way repeated-measures ANOVA
+anova = pg.rm_anova(
+    data=df_long,
+    dv='Rating',
+    within=['Algorithm', 'Question'],
+    subject='Participant ID',
+    detailed=True
+)
+
+if print_results:
+    print(anova)
 
 
 # ---------------- Figure 2 – Significances ----------------
@@ -1005,10 +1034,12 @@ participant_algo_avg = (
     .reindex(columns=ordered_algorithms)  # ensure order matches plot
 )
 
-# Plot faint individual participant averages
+# Plot faint individual participant averages with vertical jitter
 for _, row in participant_algo_avg.iterrows():
     for i, algo in enumerate(ordered_algorithms):
-        axes[1].plot(row[algo], i, marker=marker_dict[algo],  markeredgecolor='white',
+        jitter = np.random.uniform(-0.1, 0.1)  # adjust the range for desired spacing
+        y_pos = i + jitter
+        axes[1].plot(row[algo], y_pos, marker=marker_dict[algo], markeredgecolor='white',
                      color=color_dict[algo], alpha=0.2, zorder=0)
 
 axes[1].set_yticks(y_positions)

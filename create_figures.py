@@ -179,7 +179,7 @@ for video_id in ['SCI02_01']:
     plt.subplots_adjust(hspace=0.6, bottom=0.15)
     plt.savefig(f'Figures/SummaryVisualizations/{video_id}_summary_comparison_v2.png', dpi=300, bbox_inches='tight')
     if video_id == 'SCI02_01':
-        plt.savefig('Figures/FigureA1.png', dpi=600, bbox_inches='tight')
+        plt.savefig('Figures/FigureB.png', dpi=600, bbox_inches='tight')
     plt.close()
 
 
