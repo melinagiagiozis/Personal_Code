@@ -935,6 +935,10 @@ df_long['Condition'] = df_long['Algorithm'].astype(str) + ' | ' + df_long['Quest
 normality_results = pg.normality(data=df_long, dv='Rating', group='Condition')
 # print(normality_results)
 
+# Group by condition and apply skew and kurtosis functions
+# from scipy.stats import skew, kurtosis
+# print(df_long.groupby('Condition')['Rating'].agg([skew, kurtosis]))
+
 # Two-way repeated-measures ANOVA
 anova = pg.rm_anova(
     data=df_long,
