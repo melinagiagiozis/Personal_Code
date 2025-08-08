@@ -16,6 +16,8 @@ import numpy as np
 from matplotlib.lines import Line2D
 from scipy.stats import friedmanchisquare
 import statsmodels.api as sm
+from statsmodels.formula.api import ols
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
 from PIL import Image
 
 
@@ -819,111 +821,111 @@ for video in videos:
 # ---------------- Statistics ----------------
 
 
-###### Are the evaluation questions (Q1–Q5) rated differently?
+# ###### Are the evaluation questions (Q1–Q5) rated differently?
 
-# Average across videos and algorithms per participant per question
-participant_avg = (
-    df_long.groupby(['Participant ID', 'Question'])['Rating']
-    .mean()
-    .unstack()
-)
+# # Average across videos and algorithms per participant per question
+# participant_avg = (
+#     df_long.groupby(['Participant ID', 'Question'])['Rating']
+#     .mean()
+#     .unstack()
+# )
 
-# Friedman test
-stat, p = friedmanchisquare(*[participant_avg[q] for q in participant_avg.columns])
+# # Friedman test
+# stat, p = friedmanchisquare(*[participant_avg[q] for q in participant_avg.columns])
 
-# Calculate Kendall’s W
-k = len(participant_avg.columns)  # number of algorithms
-n = len(participant_avg)          # number of raters or participants
-kendalls_W = stat / (n * (k - 1))
+# # Calculate Kendall’s W
+# k = len(participant_avg.columns)  # number of algorithms
+# n = len(participant_avg)          # number of raters or participants
+# kendalls_W = stat / (n * (k - 1))
 
-if print_results:
-    print(f"Friedman χ² = {stat:.3f}, p = {p:.4f}, Kendall’s W = {kendalls_W:.3f}")
+# if print_results:
+#     print(f"Friedman χ² = {stat:.3f}, p = {p:.4f}, Kendall’s W = {kendalls_W:.3f}")
 
-if p<0.05:
-    # Use pairwise_tests instead of deprecated pairwise_ttests
-    posthocs = pg.pairwise_tests(
-        data=df_long,
-        dv='Rating',
-        within='Question',
-        subject='Participant ID',
-        padjust='bonf'  # Bonferroni correction
-    )
+# if p<0.05:
+#     # Use pairwise_tests instead of deprecated pairwise_ttests
+#     posthocs = pg.pairwise_tests(
+#         data=df_long,
+#         dv='Rating',
+#         within='Question',
+#         subject='Participant ID',
+#         padjust='bonf'  # Bonferroni correction
+#     )
 
-    # Display only relevant columns
-    if print_results:
-        print(posthocs[['A', 'B', 'T', 'p-unc', 'p-corr', 'p-adjust']])
+#     # Display only relevant columns
+#     if print_results:
+#         print(posthocs[['A', 'B', 'T', 'p-unc', 'p-corr', 'p-adjust']])
 
-# Define significance stars based on p-value
-def p_to_stars(p):
-    if p < 0.001:
-        return '***'
-    elif p < 0.01:
-        return '**'
-    elif p < 0.05:
-        return '*'
-    else:
-        return None
+# # Define significance stars based on p-value
+# def p_to_stars(p):
+#     if p < 0.001:
+#         return '***'
+#     elif p < 0.01:
+#         return '**'
+#     elif p < 0.05:
+#         return '*'
+#     else:
+#         return None
 
-# Map each question to y-axis position
-question_to_y = {q: i for i, q in enumerate(questions)}  
+# # Map each question to y-axis position
+# question_to_y = {q: i for i, q in enumerate(questions)}  
 
-# Collect bars to plot (y1, y2, stars)
-bar_annotations = []
-for _, row in posthocs.iterrows():
-    q1, q2 = row['A'], row['B']
-    p_val = row['p-corr']
-    stars = p_to_stars(p_val)
-    if stars:
-        y1, y2 = question_to_y[q1], question_to_y[q2]
-        bar_annotations.append((min(y1, y2), max(y1, y2), stars))
-
-
-###### Are the algoritms rated differently?
+# # Collect bars to plot (y1, y2, stars)
+# bar_annotations = []
+# for _, row in posthocs.iterrows():
+#     q1, q2 = row['A'], row['B']
+#     p_val = row['p-corr']
+#     stars = p_to_stars(p_val)
+#     if stars:
+#         y1, y2 = question_to_y[q1], question_to_y[q2]
+#         bar_annotations.append((min(y1, y2), max(y1, y2), stars))
 
 
-# Average rating per (Participant, Algorithm)
-algo_avg = (
-    df_long.groupby(['Participant ID', 'Algorithm'])['Rating']
-    .mean()
-    .unstack()
-)
+# ###### Are the algoritms rated differently?
 
-# Friedman test
-stat, p = friedmanchisquare(*[algo_avg[algo] for algo in algo_avg.columns])
 
-# Calculate Kendall’s W
-k = len(algo_avg.columns)  # number of algorithms
-n = len(algo_avg)          # number of raters or participants
-kendalls_W = stat / (n * (k - 1))
+# # Average rating per (Participant, Algorithm)
+# algo_avg = (
+#     df_long.groupby(['Participant ID', 'Algorithm'])['Rating']
+#     .mean()
+#     .unstack()
+# )
 
-if print_results:
-    print(f"Friedman χ² = {stat:.3f}, p = {p:.4f}, Kendall’s W = {kendalls_W:.3f}")
+# # Friedman test
+# stat, p = friedmanchisquare(*[algo_avg[algo] for algo in algo_avg.columns])
 
-if p < 0.05:
-    posthocs_algo = pg.pairwise_tests(
-        data=df_long,
-        dv='Rating',
-        within='Algorithm',
-        subject='Participant ID',
-        padjust='bonf',
-        parametric=True
-    )
+# # Calculate Kendall’s W
+# k = len(algo_avg.columns)  # number of algorithms
+# n = len(algo_avg)          # number of raters or participants
+# kendalls_W = stat / (n * (k - 1))
 
-    if print_results:
-        print(posthocs_algo[['A', 'B', 'T', 'p-unc', 'p-corr', 'p-adjust']])
+# if print_results:
+#     print(f"Friedman χ² = {stat:.3f}, p = {p:.4f}, Kendall’s W = {kendalls_W:.3f}")
 
-# Map algorithms to y-axis position
-algo_to_y = {algo: i for i, algo in enumerate(ordered_algorithms)}
+# if p < 0.05:
+#     posthocs_algo = pg.pairwise_tests(
+#         data=df_long,
+#         dv='Rating',
+#         within='Algorithm',
+#         subject='Participant ID',
+#         padjust='bonf',
+#         parametric=True
+#     )
 
-# Collect bars to plot (y1, y2, stars)
-bar_annotations_algo = []
-for _, row in posthocs_algo.iterrows():
-    a1, a2 = row['A'], row['B']
-    p_val = row['p-corr']
-    stars = p_to_stars(p_val)
-    if stars:
-        y1, y2 = algo_to_y[a1], algo_to_y[a2]
-        bar_annotations_algo.append((min(y1, y2), max(y1, y2), stars))
+#     if print_results:
+#         print(posthocs_algo[['A', 'B', 'T', 'p-unc', 'p-corr', 'p-adjust']])
+
+# # Map algorithms to y-axis position
+# algo_to_y = {algo: i for i, algo in enumerate(ordered_algorithms)}
+
+# # Collect bars to plot (y1, y2, stars)
+# bar_annotations_algo = []
+# for _, row in posthocs_algo.iterrows():
+#     a1, a2 = row['A'], row['B']
+#     p_val = row['p-corr']
+#     stars = p_to_stars(p_val)
+#     if stars:
+#         y1, y2 = algo_to_y[a1], algo_to_y[a2]
+#         bar_annotations_algo.append((min(y1, y2), max(y1, y2), stars))
 
 
 ###### Do participant ratings differ depending on the algorithm, 
@@ -951,6 +953,69 @@ anova = pg.rm_anova(
 if print_results:
     print(anova)
 
+# Check if the p-value for 'Algorithm' is significant
+if anova['p-unc'][0] < 0.05:  # If Algorithm is significant
+    # Perform Tukey's HSD for 'Algorithm'
+    tukey_algo = pairwise_tukeyhsd(df_long['Rating'], df_long['Algorithm'], alpha=0.05)
+    print("Post-hoc testing for Algorithm:")
+    print(tukey_algo.summary())
+
+# Check if the p-value for 'Question' is significant
+if anova['p-unc'][1] < 0.05:  # If Question is significant
+    # Perform Tukey's HSD for 'Question'
+    tukey_question = pairwise_tukeyhsd(df_long['Rating'], df_long['Question'], alpha=0.05)
+    print("Post-hoc testing for Question:")
+    print(tukey_question.summary())
+
+# If the interaction effect (Algorithm * Question) is significant
+if anova['p-unc'][2] < 0.05:  # If Algorithm * Question interaction is significant
+    # Tukey's HSD for the interaction (if relevant)
+    tukey_interaction = pairwise_tukeyhsd(df_long['Rating'], df_long['Algorithm'] + df_long['Question'], alpha=0.05)
+    print("Post-hoc testing for Algorithm * Question interaction:")
+    print(tukey_interaction.summary())
+
+# Define significance stars based on p-value
+def p_to_stars(p):
+    if p < 0.001:
+        return '***'
+    elif p < 0.01:
+        return '**'
+    elif p < 0.05:
+        return '*'
+    else:
+        return None
+
+# Map algorithms or groups to y-axis position
+algo_to_y = {algo: i for i, algo in enumerate(ordered_algorithms)}
+
+# Collect bars to plot (y1, y2, stars) from Tukey's HSD results
+bar_annotations_algo = []
+
+# Iterate over Tukey's HSD results
+for row in tukey_algo.summary().data[1:]:  # Skip the header row
+    a1, a2 = row[0], row[1]  # group1 and group2
+    p_val = row[3]  # p-value
+    stars = p_to_stars(p_val)  # Define the p_to_stars function (e.g., based on p-value)
+
+    if stars:
+        y1, y2 = algo_to_y[a1], algo_to_y[a2]
+        bar_annotations_algo.append((min(y1, y2), max(y1, y2), stars))
+
+# Collect bars to plot (y1, y2, stars) from Tukey's HSD results
+question_to_y = {question: i for i, question in enumerate(questions)}
+
+# Create a list to store bar annotations (y1, y2, stars)
+bar_annotations_question = []
+
+# Iterate over Tukey's HSD results for 'Question' (post-hoc results)
+for row in tukey_question.summary().data[1:]:  # Skip the header row
+    q1, q2 = row[0], row[1]  # group1 and group2 (questions)
+    p_val = row[3]  # p-value
+    stars = p_to_stars(p_val)  # Get significance stars from p-value
+    
+    if stars:
+        y1, y2 = question_to_y[q1], question_to_y[q2]
+        bar_annotations_question.append((min(y1, y2), max(y1, y2), stars))
 
 # ---------------- Figure 2 – Significances ----------------
 
@@ -1004,18 +1069,18 @@ handles, labels = axes[0].get_legend_handles_labels()
 axes[0].legend(handles[-2:], labels[-2:])
 
 # Add significance bars to Plot 2A
-x_base = 5.05  # adjust based on axis scale
-offset = 0.05  # spacing between bars
+x_base = 4.95  # adjust based on axis scale
+offset = 0.08  # spacing between bars
 
-bar_annotations[1], bar_annotations[2] = bar_annotations[2], bar_annotations[1]
-bar_annotations[1], bar_annotations[3] = bar_annotations[3], bar_annotations[1]
+# bar_annotations_question[2], bar_annotations_question[3] = bar_annotations_question[3], bar_annotations_question[2]
+# bar_annotations_question[1], bar_annotations_question[4] = bar_annotations_question[4], bar_annotations_question[1]
 
-for i, (y1, y2, stars) in enumerate(bar_annotations):
+for i, (y1, y2, stars) in enumerate(bar_annotations_question):
     x = x_base + i * offset
     y_top = y2
     y_bot = y1
     axes[0].plot([x, x], [y_bot, y_top], color='black', linewidth=1)
-    axes[0].text(x + 0.01, (y_bot + y_top) / 2, stars, 
+    axes[0].text(x + 0.004, (y_bot + y_top) / 2, stars, 
                  ha='left', va='center', fontsize=10, 
                  rotation=90, clip_on=False)
 
@@ -1096,7 +1161,7 @@ axes[2].legend(title="Algorithm", fontsize=14, title_fontsize=14, loc='upper lef
 
 # Shared styling
 for ax in axes:
-    ax.set_xlim(0.89, 5.4)
+    ax.set_xlim(0.89, 5.51)
     ax.set_xlabel("Participant rating", fontsize=14)
     ax.tick_params(axis='x', labelsize=12)
     ax.tick_params(axis='y', labelsize=14)
